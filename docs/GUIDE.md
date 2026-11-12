@@ -57,8 +57,8 @@ A wrong, expired or revoked link gets one plain line and nothing else:
 
 ## Step 1: the image
 
-If you have the address of a published image, use it in place of `ghcr.io/OWNER/web-obs-client-report:v0.1.7` everywhere below. Otherwise build your own
-from a checkout of this repository and push it to a registry you control (replace `OWNER` with your registry account):
+A ready-made image is published at `ghcr.io/gcollins808/web-obs-client-report:v0.1.7`. Use that address in place of `ghcr.io/OWNER/web-obs-client-report:v0.1.7`
+everywhere below. Or build your own from a checkout of this repository and push it to a registry you control (replace `OWNER` with your registry account):
 
 ```
 docker build -f deploy/Dockerfile -t ghcr.io/OWNER/web-obs-client-report:v0.1.7 .
@@ -206,12 +206,13 @@ Check it: without the service token the ingest must be refused by Access (a logi
 
 ## Step 5: the plugin settings
 
-In Obsidian, open the Web-Obs plugin's settings and fill in the publishing values (the names on your screen may differ a little between plugin versions):
+In Obsidian, open Settings, then Web-Obs, and scroll to the **Client reports** section. Fill in:
 
-1. **Publish target:** `audit.example.com` (the base address; the plugin adds `/ingest/v1/reports`).
-2. **Cloudflare Access Client ID** and **Client Secret:** the two values of the service token from Cloudflare Access.
-3. **Publish secret:** the same value as `INGEST_SECRET`.
-4. These values live in Obsidian's secret storage, not in the vault and not in a settings file.
+1. **Publish target:** `audit.example.com` (the base address only; https is required and the plugin adds `/ingest/v1/reports`).
+2. **Publish secret:** the same value as `INGEST_SECRET`. If you leave it empty, Publish asks for it once per session and keeps it in memory only.
+3. **Cloudflare Access ID** and **Cloudflare Access secret:** the two values of the service token from Cloudflare Access. The plugin marks them optional because it also works without Access; with Access in front of your ingest (step 3) you need both.
+4. These values are kept in Obsidian's secret storage (Obsidian 1.11.4 or later), not in the vault and not in `data.json`.
+5. Optional: **Approved by** (your name, pre-filled when you publish) and **Client feedback address**.
 
 Publish a report made from invented data first.
 

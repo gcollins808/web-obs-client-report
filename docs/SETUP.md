@@ -99,7 +99,7 @@ One hostname, two containers, two protections. Menu names in Zero Trust and the 
 ## 7. The plugin
 
 1. Publish target: `audit.example.com` (base address only; the plugin adds `/ingest/v1/reports`).
-2. Cloudflare Access Client ID and Client Secret: the two values from step 5.1.
+2. Cloudflare Access ID and Cloudflare Access secret: the two values from step 5.1 (the service token's Client ID and Client Secret).
 3. Publish secret: the same value as `INGEST_SECRET`.
 4. These go in Obsidian's secret storage, never in `data.json` or the vault.
 5. Publish a SYNTHETIC report (the invented `example-shop.test` fixture). You get a link back once.

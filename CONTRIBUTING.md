@@ -2,7 +2,7 @@
 
 Thanks for looking. This is a small project kept by one person.
 
-**Who can open issues and pull requests:** [TO BE DECIDED BY THE MAINTAINER: either "issues and pull requests are welcome from anyone" or "issues only; pull requests are not accepted for now"].
+Issues are welcome. Pull requests are welcome for small fixes; for anything bigger, open an issue first.
 
 ## Before you open an issue
 
