@@ -1,0 +1,31 @@
+# Placeholder, not run yet. On a version tag: build the image and run both container smoke tests in it. No registry push.
+name: container
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: read
+jobs:
+  build-and-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Build the image
+        run: docker build -f deploy/Dockerfile -t webobs-report:ci .
+      - name: Smoke test (viewer, locked down)
+        run: >
+          docker run --rm --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges:true
+          -e EXPECT_LOCKED_DOWN=1 -v "$PWD/apps/server/tools:/smoke:ro" webobs-report:ci node /smoke/docker-smoke.mjs
+      - name: Smoke test (ingest push path, synthetic secret made for this run only)
+        run: |
+          INGEST_SECRET="$(openssl rand -hex 32)"
+          export INGEST_SECRET
+          docker run --rm --read-only --tmpfs /tmp --tmpfs /data:uid=1000,gid=1000 --cap-drop ALL \
+            --security-opt no-new-privileges:true -e INGEST_SECRET -v "$PWD/apps/server/tools:/smoke:ro" \
+            webobs-report:ci node /smoke/docker-smoke-ingest.mjs
+      # Registry push: deliberately not set up. Add it here only after a review (login with a scoped token, push the tag).
+      # - name: Push the image
+      #   run: echo "not configured"

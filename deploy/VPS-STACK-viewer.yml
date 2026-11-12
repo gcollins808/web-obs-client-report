@@ -1,0 +1,36 @@
+# Replace OWNER in the image name with the registry account that holds your image (the public image path, or the image you built yourself: docker build -f deploy/Dockerfile).
+# Portainer stack 1 of 2: the VIEWER only (ingest is a separate stack, deployed later). Names only: set the values in Portainer's
+# "Environment variables" box (or the host), never in this file. Image: the published image, or the build you pushed to your own registry.
+services:
+  report:
+    image: ghcr.io/OWNER/web-obs-client-report:TAG
+    container_name: webobs-report
+    restart: unless-stopped
+    environment:
+      WEBOBS_REPORT_BASE: ${WEBOBS_REPORT_BASE}        # https://audit.example.com
+      TRUST_PROXY: "1"                                 # only because nothing but cloudflared can reach this container
+      REPORT_SOURCE: directory
+      RETENTION_DAYS: ${RETENTION_DAYS:-90}
+      MAIL_MODE: ${MAIL_MODE:-outbox}                  # outbox until Resend is set up
+      WEBOBS_FEEDBACK_TO: ${WEBOBS_FEEDBACK_TO:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}              # secret: Portainer variable only
+      RESEND_FROM: ${RESEND_FROM:-}
+    volumes:
+      - /srv/webobs/reports:/data/reports:ro           # read-only for the viewer
+      - /srv/webobs/registry:/data/registry:ro
+      - /srv/webobs/outbox:/data/outbox                # writable only while MAIL_MODE=outbox
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    networks: [tunnel]
+    # No "ports:" on purpose. The tunnel's public hostname audit.example.com points at http://report:8080
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/healthz').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 30s
+      timeout: 3s
+      start_period: 5s
+networks:
+  tunnel:
+    external: true
+    name: ${TUNNEL_NETWORK}                            # the network your cloudflared container is already on (docker network ls)

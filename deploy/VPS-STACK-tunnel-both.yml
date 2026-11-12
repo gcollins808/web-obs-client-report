@@ -1,0 +1,150 @@
+# Replace OWNER in the image name with the registry account that holds your image (the public image path, or the image you built yourself: docker build -f deploy/Dockerfile).
+# Portainer stack (web editor): the report VIEWER and the INGEST in ONE stack, one hostname, data in ONE named volume (webobs-data).
+# This is the main deploy example. Step-by-step guide: docs/SETUP.md.
+#
+# Before deploying: create the volume once (Portainer: Volumes > Add volume, name  webobs-data ; or:  docker volume create webobs-data ).
+# A new volume takes the image's /data ownership (uid 1000) on its first mount: no mkdir or chown on the host.
+# Names only: set the values in Portainer's "Environment variables" box, never in this file.
+#
+# The ingest is OFF until you set INGEST_ENABLED=1 together with INGEST_SECRET, CF_ACCESS_TEAM_DOMAIN and CF_ACCESS_AUD.
+# Without Cloudflare Access (NOT recommended, docs/SETUP.md): INGEST_REQUIRE_ACCESS_HEADER=0, INGEST_ACKNOWLEDGE_NO_EDGE_AUTH=yes, a 48+ character
+# INGEST_SECRET and CLIENT_IP_HEADER set to your reverse proxy's header; the ingest refuses to start without the acknowledgment.
+#   off:            the ingest container stays running and IDLES: one log line says it is switched off, every request to it answers 503, and Portainer shows it
+#                   as (unhealthy) on purpose, so nothing restarts in a loop. Set INGEST_ENABLED=1 (with the other names) and redeploy to turn it on. The viewer works either way.
+#   misconfigured:  it prints a plain reason (names only) and exits 1; Docker keeps restarting it, so the log line stays visible until you fix the variables.
+# This stack has THREE services: report (the viewer), ingest and cleanup. The cleanup service is required (or use a scheduled task, see its comment).
+#
+# Tunnel (cloudflared on the same network), two public-hostname routes on the same hostname, IN THIS ORDER:
+#   1. path  ingest/*   ->  http://ingest:8081      (above the catch-all; protected by a Cloudflare Access service-token application)
+#   2. (no path)        ->  http://report:8080      (the viewer, public, no Access login)
+services:
+  report:
+    image: ghcr.io/OWNER/web-obs-client-report:v0.1.7
+    container_name: webobs-report
+    restart: unless-stopped
+    environment:
+      # Public address of the viewer, https, no trailing slash, e.g. https://audit.example.com. REQUIRED.
+      WEBOBS_REPORT_BASE: ${WEBOBS_REPORT_BASE}
+      # 1 because only the Cloudflare tunnel can reach this container (no published ports).
+      TRUST_PROXY: "1"
+      # The header that names the caller for the rate limits (its last entry, plain IPs only). CF-Connecting-IP behind the Cloudflare
+      # tunnel; without Cloudflare, the header YOUR reverse proxy sets and overwrites (e.g. X-Real-IP).
+      CLIENT_IP_HEADER: ${CLIENT_IP_HEADER:-CF-Connecting-IP}
+      # Reports are read from the volume below.
+      REPORT_SOURCE: directory
+      # Days a report is served at most. Optional.
+      RETENTION_DAYS: ${RETENTION_DAYS:-90}
+      # outbox = feedback kept in the memory-backed /outbox (lost on restart); resend = emailed (set the Resend names below).
+      MAIL_MODE: ${MAIL_MODE:-outbox}
+      OUTBOX_DIR: /outbox
+      # Where client feedback goes. Optional.
+      WEBOBS_FEEDBACK_TO: ${WEBOBS_FEEDBACK_TO:-}
+      # SECRET. Portainer variable only. Only needed when MAIL_MODE=resend.
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      # Sender address for the feedback email. Only needed when MAIL_MODE=resend.
+      RESEND_FROM: ${RESEND_FROM:-}
+    volumes:
+      - webobs-data:/data:ro                           # reports and the link list; read-only for the viewer
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /outbox:uid=1000,gid=1000                      # writable scratch for feedback while MAIL_MODE=outbox; gone on restart
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - tunnel
+    # No "ports:" on purpose. Tunnel catch-all route -> http://report:8080
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/healthz').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  ingest:
+    image: ghcr.io/OWNER/web-obs-client-report:v0.1.7
+    container_name: webobs-ingest
+    # unless-stopped: an unexpected exit (a crash, or a misconfiguration to fix) is retried instead of leaving the upload route down. See the header.
+    restart: unless-stopped
+    command: ["node", "ingest/ingest.mjs"]
+    environment:
+      # 1 turns the ingest on. Leave unset (0) until the three names below and the Access application are ready.
+      INGEST_ENABLED: ${INGEST_ENABLED:-0}
+      # SECRET, 32+ characters (48+ without Cloudflare Access). Portainer variable only. The plugin's Publish secret holds the same value.
+      INGEST_SECRET: ${INGEST_SECRET:-}
+      # Cloudflare Access check: 1 (the default) = verify the Access token on every request (signature, issuer, audience, expiry). Keep it 1.
+      # 0 = run WITHOUT Cloudflare Access (NOT recommended; docs/SETUP.md): then also INGEST_ACKNOWLEDGE_NO_EDGE_AUTH=yes and a 48+ character secret.
+      INGEST_REQUIRE_ACCESS_HEADER: ${INGEST_REQUIRE_ACCESS_HEADER:-1}
+      # Must be 'yes' only when you deliberately run without Cloudflare Access (INGEST_REQUIRE_ACCESS_HEADER=0). Leave empty otherwise.
+      INGEST_ACKNOWLEDGE_NO_EDGE_AUTH: ${INGEST_ACKNOWLEDGE_NO_EDGE_AUTH:-}
+      # Your Zero Trust team domain, e.g. yourteam.cloudflareaccess.com
+      CF_ACCESS_TEAM_DOMAIN: ${CF_ACCESS_TEAM_DOMAIN:-}
+      # The Access application's "Application Audience (AUD) Tag".
+      CF_ACCESS_AUD: ${CF_ACCESS_AUD:-}
+      # The links it hands back start with this; the same value as the viewer's. REQUIRED.
+      WEBOBS_REPORT_BASE: ${WEBOBS_REPORT_BASE}
+      # 1 because only the Cloudflare tunnel can reach this container.
+      TRUST_PROXY: "1"
+      # The header that names the caller for the rate limits (its last entry, plain IPs only). CF-Connecting-IP behind the Cloudflare
+      # tunnel; without Cloudflare, the header YOUR reverse proxy sets and overwrites (e.g. X-Real-IP).
+      CLIENT_IP_HEADER: ${CLIENT_IP_HEADER:-CF-Connecting-IP}
+      # Where it writes, inside the shared volume.
+      INGEST_REPORTS_DIR: /data/reports
+      INGEST_REGISTRY_DIR: /data/registry
+      # Audit log: ids and times only; lives in the same volume.
+      INGEST_AUDIT_LOG: /data/audit/ingest.log
+      # The audit log is capped: at this size (bytes, default 1048576) it rotates; this many old files (default 3) stay. Optional; names only.
+      INGEST_AUDIT_MAX_BYTES: ${INGEST_AUDIT_MAX_BYTES:-1048576}
+      INGEST_AUDIT_KEEP: ${INGEST_AUDIT_KEEP:-3}
+    volumes:
+      - webobs-data:/data                              # read-write, this service only
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - tunnel
+    # No "ports:" on purpose. Tunnel route: path ingest/* -> http://ingest:8081 (listed above the catch-all)
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8081/healthz').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+
+  # REQUIRED: removes expired and revoked links and their reports once a day. The viewer cannot (it mounts the data read-only), so without this
+  # service expired reports stay on disk. Try it first by hand with --dry-run (docs/SETUP.md, step 9). Or run the same command as a scheduled
+  # task on the host instead, and delete this service.
+  cleanup:
+    image: ghcr.io/OWNER/web-obs-client-report:v0.1.7
+    container_name: webobs-cleanup
+    restart: unless-stopped
+    init: true                                         # so stopping the stack ends the wait at once
+    command: ["sh", "-c", "while true; do node tools/cleanup.mjs --reports /data/reports --registry /data/registry; sleep 86400; done"]
+    volumes:
+      - webobs-data:/data                              # read-write: it deletes expired files
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    network_mode: "none"                               # it needs no network
+    # The image's own health check probes the viewer port, which this service does not open.
+    healthcheck:
+      disable: true
+
+volumes:
+  webobs-data:
+    external: true
+
+networks:
+  tunnel:
+    external: true

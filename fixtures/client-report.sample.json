@@ -1,0 +1,2681 @@
+{
+  "format": "webobs.client-report",
+  "version": "1.1",
+  "meta": {
+    "reportId": "wr-b90549019e-20240115",
+    "createdAt": "2024-01-16T09:00:00Z",
+    "generator": "Web-Obs Report Studio",
+    "source": {
+      "siteId": "example-shop.test",
+      "capturedAt": "2024-01-15T10:00:00Z",
+      "manifestSha256": "b90549019e5371542c03385513ba6b1e23808a9781e5ac08fe3e78409c5e9fbf"
+    },
+    "review": {
+      "state": "approved",
+      "reviewedBy": "Dana Example"
+    },
+    "integrity": {
+      "algorithm": "sha256",
+      "contentSha256": "b3505e5f671f444dbfad20330fbad0f97efdc554617b9701f83398d588aa40ca"
+    }
+  },
+  "client": {
+    "name": "Example Shop",
+    "domain": "example-shop.test",
+    "accent": null,
+    "preparedFor": "Casey Sample",
+    "presenter": "Dana Example"
+  },
+  "feedback": {
+    "to": "feedback@agency.example",
+    "subject": "Feedback on the Example Shop website review"
+  },
+  "labels": {
+    "RAW": "Supplied",
+    "FETCH": "Observed",
+    "LAB": "Lab test",
+    "INFER": "Our view",
+    "SCOPE": "Scope"
+  },
+  "summary": {
+    "pagesMapped": 25,
+    "findingsCount": 7,
+    "bySeverity": {
+      "high": 2,
+      "medium": 2,
+      "low": 3
+    }
+  },
+  "findings": [
+    {
+      "id": "slow-first-paint",
+      "title": "Your pages are slow to show their main content",
+      "scope": "sitewide",
+      "categories": [
+        {
+          "id": "performance",
+          "label": "performance"
+        }
+      ],
+      "severity": {
+        "level": "high",
+        "basis": "The sampled pages were slower than the audit's slow-load threshold, and speed affects every page a visitor opens."
+      },
+      "effort": {
+        "size": "M",
+        "basis": "Needs a waterfall analysis first; fixes are usually theme, image and script changes rather than a rebuild."
+      },
+      "owner": {
+        "id": "developer",
+        "label": "Developer"
+      },
+      "horizon": "month-1",
+      "observed": [
+        {
+          "nodeIds": [
+            "home",
+            "shop-lorem-lamp"
+          ],
+          "text": "In our test load, the main content took between 2.6 and 3.4 seconds to appear across the 3 pages we sampled.",
+          "label": "LAB",
+          "labelText": "Lab test",
+          "sources": [
+            {
+              "finding": "slow-lab-lcp"
+            },
+            {
+              "path": "siteIntel.browserAudit.pages[*].lab.lcpMs"
+            }
+          ]
+        },
+        {
+          "nodeIds": [
+            "home",
+            "shop",
+            "shop-lorem-lamp"
+          ],
+          "text": "The layout also jumped around while loading; the worst shift score was 0.12.",
+          "label": "LAB",
+          "labelText": "Lab test",
+          "sources": [
+            {
+              "path": "siteIntel.browserAudit.pages[*].lab.cls"
+            }
+          ]
+        }
+      ],
+      "implications": [
+        {
+          "text": "Visitors who wait for a page to settle are more likely to leave before reading the offer, and the delay affects every service page the same way.",
+          "label": "INFER",
+          "labelText": "Our view",
+          "basis": "General web-performance practice. No analytics data was supplied, so the size of the effect on this business is not demonstrated.",
+          "sources": []
+        }
+      ],
+      "caveat": "Measured in one lab load on one computer through the capture proxy. Confirm with real-visitor (field) data before committing budget.",
+      "fix": [
+        "Pull real-visitor speed data (Search Console, CrUX) so the starting point is not a single lab run.",
+        "Run a waterfall on the homepage to find the largest element and what delays it.",
+        "Defer or remove scripts that load before the visitor does anything."
+      ],
+      "verify": "Recapture. Lab load times on the sampled pages drop and field data agrees.",
+      "examples": [
+        {
+          "url": "https://example-shop.test/shop/lorem-lamp/"
+        },
+        {
+          "url": "https://example-shop.test/"
+        }
+      ],
+      "glossary": [
+        "lcp",
+        "lab-test",
+        "field-data",
+        "third-party"
+      ],
+      "spotlight": {
+        "kind": "sitewide"
+      }
+    },
+    {
+      "id": "dead-links",
+      "title": "Visitors and search engines run into dead or detoured links",
+      "scope": "sitewide-template",
+      "categories": [
+        {
+          "id": "links",
+          "label": "Links"
+        }
+      ],
+      "severity": {
+        "level": "high",
+        "basis": "Links that lead nowhere interrupt a visitor at the moment they chose to act."
+      },
+      "effort": {
+        "size": "S",
+        "basis": "Usually a handful of link edits, often in one shared template."
+      },
+      "owner": {
+        "id": "developer",
+        "label": "Developer"
+      },
+      "horizon": "week-1",
+      "observed": [
+        {
+          "nodeIds": [
+            "help-enim-care"
+          ],
+          "text": "1 link points to a page that returns 404 or 410.",
+          "label": "FETCH",
+          "labelText": "Observed",
+          "sources": [
+            {
+              "finding": "link-fix-broken"
+            }
+          ]
+        },
+        {
+          "nodeIds": [
+            "help-aliqua-sizing"
+          ],
+          "text": "1 link points to a URL that redirects instead of the final address.",
+          "label": "FETCH",
+          "labelText": "Observed",
+          "sources": [
+            {
+              "finding": "link-fix-redirect"
+            }
+          ]
+        }
+      ],
+      "implications": [
+        {
+          "text": "A dead link is a dead end for the visitor, and repeated redirects slow every click that passes through them.",
+          "label": "INFER",
+          "labelText": "Our view",
+          "basis": "General usability and crawl-efficiency practice.",
+          "sources": []
+        }
+      ],
+      "fix": [
+        "Fix or remove each broken link on the page that contains it.",
+        "Update redirected links to point straight at the final address."
+      ],
+      "verify": "Recapture. The broken and redirected link counts fall to zero.",
+      "examples": [
+        {
+          "url": "https://example-shop.test/help/enim-care/"
+        }
+      ],
+      "glossary": [
+        "broken-link",
+        "redirect"
+      ],
+      "spotlight": {
+        "kind": "pages",
+        "nodeIds": [
+          "help-enim-care",
+          "help-aliqua-sizing"
+        ],
+        "pageCount": 2,
+        "filter": "all"
+      }
+    },
+    {
+      "id": "search-snippets",
+      "title": "Your search-result snippets are left to chance",
+      "scope": "page-specific",
+      "categories": [
+        {
+          "id": "metadata",
+          "label": "metadata"
+        },
+        {
+          "id": "duplicates",
+          "label": "duplicates"
+        }
+      ],
+      "severity": {
+        "level": "medium",
+        "basis": "Some pages have no title or main heading at all."
+      },
+      "effort": {
+        "size": "S",
+        "basis": "Copywriting plus a plugin field; no engineering."
+      },
+      "owner": {
+        "id": "marketing",
+        "label": "Marketing"
+      },
+      "horizon": "week-1",
+      "observed": [
+        {
+          "nodeIds": [
+            "shop-ipsum-chair",
+            "shop-dolor-table"
+          ],
+          "text": "2 pages have no meta description, so search engines write their own snippet.",
+          "label": "FETCH",
+          "labelText": "Observed",
+          "sources": [
+            {
+              "finding": "seo:missing-meta-description"
+            }
+          ]
+        },
+        {
+          "nodeIds": [
+            "journal-incididunt-story"
+          ],
+          "text": "1 page has titles long enough to be cut off in results.",
+          "label": "FETCH",
+          "labelText": "Observed",
+          "sources": [
+            {
+              "finding": "seo:title-too-long"
+            }
+          ]
+        },
+        {
+          "nodeIds": [
+            "journal-tempor-guide"
+          ],
+          "text": "1 page has no main heading.",
+          "label": "FETCH",
+          "labelText": "Observed",
+          "sources": [
+            {
+              "finding": "seo:missing-h1"
+            }
+          ]
+        },
+        {
+          "nodeIds": [
+            "shop-lorem-lamp",
+            "shop-consectetur-rug"
+          ],
+          "text": "The same title is reused across 2 groups.",
+          "label": "FETCH",
+          "labelText": "Observed",
+          "sources": [
+            {
+              "finding": "dup-title"
+            }
+          ]
+        }
+      ],
+      "implications": [
+        {
+          "text": "The snippet is the first thing a searcher reads about you; a written one can speak to the services you want to be hired for.",
+          "label": "INFER",
+          "labelText": "Our view",
+          "basis": "General search-result presentation practice.",
+          "sources": []
+        }
+      ],
+      "fix": [
+        "Write a distinct title and description for each service page first, then the rest.",
+        "Set a canonical URL on every indexable page."
+      ],
+      "verify": "Recapture. The counts drop to zero for the service pages.",
+      "examples": [
+        {
+          "url": "https://example-shop.test/shop/ipsum-chair/"
+        },
+        {
+          "url": "https://example-shop.test/shop/dolor-table/"
+        }
+      ],
+      "glossary": [
+        "title-meta"
+      ],
+      "spotlight": {
+        "kind": "pages",
+        "nodeIds": [
+          "journal-incididunt-story",
+          "shop-ipsum-chair",
+          "shop-dolor-table",
+          "journal-tempor-guide",
+          "shop-lorem-lamp",
+          "shop-consectetur-rug"
+        ],
+        "pageCount": 6,
+        "filter": "all"
+      }
+    },
+    {
+      "id": "duplicate-and-hidden-pages",
+      "title": "Duplicate and hard-to-reach pages compete with your real content",
+      "scope": "section",
+      "categories": [
+        {
+          "id": "structure",
+          "label": "Site structure"
+        }
+      ],
+      "severity": {
+        "level": "medium",
+        "basis": "Large share of the captured site, but archive and duplicate pages are rarely the pages that win business."
+      },
+      "effort": {
+        "size": "M",
+        "basis": "A policy decision (keep, consolidate or noindex) followed by a template or plugin setting."
+      },
+      "owner": {
+        "id": "content",
+        "label": "Content team"
+      },
+      "horizon": "quarter",
+      "observed": [
+        {
+          "nodeIds": [
+            "shop-amet-shelf",
+            "journal-labore-review"
+          ],
+          "text": "2 pages cannot be reached by following links from the homepage.",
+          "label": "FETCH",
+          "labelText": "Observed",
+          "sources": [
+            {
+              "finding": "orphan-page"
+            },
+            {
+              "path": "stats.orphanPages"
+            }
+          ]
+        }
+      ],
+      "implications": [
+        {
+          "text": "Search engines see many thin, repeated pages and have to guess which one to show, which dilutes the pages you actually want found.",
+          "label": "INFER",
+          "labelText": "Our view",
+          "basis": "Standard duplicate-content reasoning. Impact on this site's rankings is not demonstrated (no search data supplied).",
+          "sources": []
+        }
+      ],
+      "fix": [
+        "Decide which archive and duplicate page types deserve to exist (category, tag, date, print versions).",
+        "Noindex or consolidate the rest, and stop linking to them from navigation."
+      ],
+      "verify": "Recapture. Orphan and near-duplicate counts fall and the remaining pages have distinct text.",
+      "examples": [
+        {
+          "url": "https://example-shop.test/shop/amet-shelf/"
+        },
+        {
+          "url": "https://example-shop.test/journal/labore-review/"
+        }
+      ],
+      "glossary": [
+        "orphan",
+        "duplicate",
+        "canonical"
+      ],
+      "spotlight": {
+        "kind": "pages",
+        "nodeIds": [
+          "shop-amet-shelf",
+          "journal-labore-review"
+        ],
+        "pageCount": 2,
+        "filter": "orphans"
+      }
+    },
+    {
+      "id": "accessibility",
+      "title": "Parts of the site are hard to use with assistive technology",
+      "scope": "sitewide-template",
+      "categories": [
+        {
+          "id": "accessibility",
+          "label": "Accessibility"
+        }
+      ],
+      "severity": {
+        "level": "low",
+        "basis": "Automated checks found issues, but their reach is limited to what those rules can see."
+      },
+      "effort": {
+        "size": "M",
+        "basis": "Most fixes are template-level, but they touch navigation, forms and colour."
+      },
+      "owner": {
+        "id": "developer",
+        "label": "Developer"
+      },
+      "horizon": "quarter",
+      "observed": [
+        {
+          "nodeIds": [
+            "shop-lorem-lamp",
+            "shop-adipiscing-vase"
+          ],
+          "text": "2 pages have images without alt text.",
+          "label": "FETCH",
+          "labelText": "Observed",
+          "sources": [
+            {
+              "finding": "images-missing-alt"
+            }
+          ]
+        }
+      ],
+      "implications": [
+        {
+          "text": "People using screen readers or low vision settings can be unable to complete forms or find contact links, which is also a legal and reputational exposure.",
+          "label": "INFER",
+          "labelText": "Our view",
+          "basis": "General accessibility practice. Automated rules cover only part of WCAG, so conformance is not assessed.",
+          "sources": []
+        }
+      ],
+      "caveat": "Automated rules cover only part of the accessibility guidelines. A manual review is still needed before claiming conformance.",
+      "fix": [
+        "Give every link, button and form field a clear accessible name.",
+        "Raise text contrast where the automated test flagged it.",
+        "Add alt text to meaningful images."
+      ],
+      "verify": "Recapture and re-run the automated accessibility rules on the same pages.",
+      "examples": [],
+      "glossary": [
+        "assistive-tech",
+        "alt-text"
+      ],
+      "spotlight": {
+        "kind": "pages",
+        "nodeIds": [
+          "shop-lorem-lamp",
+          "shop-adipiscing-vase"
+        ],
+        "pageCount": 2,
+        "filter": "issues"
+      }
+    },
+    {
+      "id": "indexing-signals",
+      "title": "Some pages send mixed signals to search engines",
+      "scope": "page-specific",
+      "categories": [
+        {
+          "id": "indexing",
+          "label": "indexing"
+        }
+      ],
+      "severity": {
+        "level": "low",
+        "basis": "Each case may be intentional, so each needs a quick review."
+      },
+      "effort": {
+        "size": "S",
+        "basis": "Individual tag or setting changes per page."
+      },
+      "owner": {
+        "id": "developer",
+        "label": "Developer"
+      },
+      "horizon": "month-1",
+      "observed": [
+        {
+          "nodeIds": [
+            "company-ullamco-press"
+          ],
+          "text": "1 page is reachable by links but missing from the sitemap.",
+          "label": "FETCH",
+          "labelText": "Observed",
+          "sources": [
+            {
+              "finding": "unlisted-in-sitemap"
+            }
+          ]
+        }
+      ],
+      "implications": [
+        {
+          "text": "When signals disagree, search engines choose for you, and the pages you care about may not be the ones shown.",
+          "label": "INFER",
+          "labelText": "Our view",
+          "basis": "Search-engine documentation describes this behaviour; the effect on this site is not demonstrated.",
+          "sources": []
+        }
+      ],
+      "fix": [
+        "Review each page and decide whether it should be indexed.",
+        "Make the tags, sitemap and internal links agree with that decision."
+      ],
+      "verify": "Recapture. The conflicting-signal counts fall to zero.",
+      "examples": [],
+      "glossary": [
+        "indexing",
+        "canonical"
+      ],
+      "spotlight": {
+        "kind": "pages",
+        "nodeIds": [
+          "company-ullamco-press"
+        ],
+        "pageCount": 1,
+        "filter": "orphans"
+      }
+    },
+    {
+      "id": "stale-or-thin-content",
+      "title": "Some content looks out of date or thin",
+      "scope": "section",
+      "categories": [
+        {
+          "id": "content",
+          "label": "Content"
+        }
+      ],
+      "severity": {
+        "level": "low",
+        "basis": "Quality signals matter over time, but no single page is critical."
+      },
+      "effort": {
+        "size": "M",
+        "basis": "Each page needs an editorial decision."
+      },
+      "owner": {
+        "id": "content",
+        "label": "Content team"
+      },
+      "horizon": "quarter",
+      "observed": [
+        {
+          "nodeIds": [
+            "help-minim-contact"
+          ],
+          "text": "1 page has very little body text.",
+          "label": "FETCH",
+          "labelText": "Observed",
+          "sources": [
+            {
+              "finding": "thin-content"
+            }
+          ]
+        }
+      ],
+      "implications": [
+        {
+          "text": "Old or thin pages can read as neglected and give visitors less reason to trust or contact you.",
+          "label": "INFER",
+          "labelText": "Our view",
+          "basis": "General content-quality practice.",
+          "sources": []
+        }
+      ],
+      "fix": [
+        "Review each flagged page: refresh, merge or retire it.",
+        "Add any missing trust pages."
+      ],
+      "verify": "Recapture. Flagged pages show a recent date or no longer appear.",
+      "examples": [],
+      "glossary": [],
+      "spotlight": {
+        "kind": "pages",
+        "nodeIds": [
+          "help-minim-contact"
+        ],
+        "pageCount": 1,
+        "filter": "all"
+      }
+    }
+  ],
+  "glossary": [
+    {
+      "id": "lcp",
+      "term": "Main-content load time",
+      "plain": "How long a visitor waits before the biggest thing on the page (usually a headline or a photo) shows up. Developers call it LCP."
+    },
+    {
+      "id": "lab-test",
+      "term": "Lab test",
+      "plain": "A single timed page load on one computer. Useful for spotting problems, but real visitors on real phones can see better or worse."
+    },
+    {
+      "id": "field-data",
+      "term": "Real-visitor data",
+      "plain": "Speed measured from the devices of people who actually visited. It is the fairer measure, and it was not part of this review."
+    },
+    {
+      "id": "third-party",
+      "term": "Third-party service",
+      "plain": "A tool on your pages that comes from another company, such as chat widgets, ad trackers or font libraries. Each one is an extra thing the page must wait for."
+    },
+    {
+      "id": "broken-link",
+      "term": "Broken link",
+      "plain": "A link that leads to a page that no longer exists. Visitors see an error and search engines see a dead end."
+    },
+    {
+      "id": "redirect",
+      "term": "Redirect",
+      "plain": "A forwarding instruction: \"this page moved, go over there.\" A few are normal; long chains slow people down."
+    },
+    {
+      "id": "orphan",
+      "term": "Orphan page",
+      "plain": "A page that exists but that nothing else on your site links to, so visitors and search engines have no path to it."
+    },
+    {
+      "id": "duplicate",
+      "term": "Duplicate content",
+      "plain": "Two or more pages that say nearly the same thing. Search engines have to guess which one to show."
+    },
+    {
+      "id": "title-meta",
+      "term": "Page title and description",
+      "plain": "The headline and two-line summary shown for your page in search results. If you do not write them, Google writes them for you."
+    },
+    {
+      "id": "canonical",
+      "term": "Canonical address",
+      "plain": "The one official web address for a page, used when the same page can be reached several ways."
+    },
+    {
+      "id": "alt-text",
+      "term": "Alt text",
+      "plain": "A short written description of an image. Screen readers read it aloud and search engines use it to understand the picture."
+    },
+    {
+      "id": "assistive-tech",
+      "term": "Assistive technology",
+      "plain": "Tools such as screen readers that people with low vision or motor difficulty use to browse the web."
+    },
+    {
+      "id": "indexing",
+      "term": "Indexing",
+      "plain": "Search engines keeping a copy of your page so it can appear in results. A page that is not indexed cannot be found by searching."
+    }
+  ],
+  "map": {
+    "site": {
+      "schemaVersion": "1.3.0",
+      "siteId": "example-shop.test",
+      "domain": "example-shop.test",
+      "brandName": "Example Shop",
+      "origin": "https://example-shop.test",
+      "capturedAt": "2024-01-15T10:00:00Z",
+      "captureStatus": "complete",
+      "stats": {
+        "pagesCrawled": 25,
+        "orphanPages": 2,
+        "unlistedPages": 1,
+        "brokenOrRedirectPages": 2,
+        "externalDomains": 2,
+        "externalEdges": 3,
+        "internalEdges": 73,
+        "sitemapUrlsTotal": 24,
+        "sitemapsFound": 1
+      },
+      "brandKit": {},
+      "sections": [
+        {
+          "id": "shop",
+          "label": "Shop",
+          "pageCount": 7
+        },
+        {
+          "id": "journal",
+          "label": "Journal",
+          "pageCount": 6
+        },
+        {
+          "id": "help",
+          "label": "Help",
+          "pageCount": 6
+        },
+        {
+          "id": "company",
+          "label": "Company",
+          "pageCount": 5
+        }
+      ],
+      "nodes": [
+        {
+          "id": "home",
+          "kind": "home",
+          "health": "home",
+          "flags": [],
+          "title": "Example Shop | Lorem ipsum furniture",
+          "url": "https://example-shop.test/",
+          "path": "/",
+          "section": "root",
+          "statusCode": 200,
+          "inSitemap": true,
+          "urlDepth": 0,
+          "clickDepth": 0,
+          "wordCount": 420,
+          "inlinksBody": 0,
+          "inlinksTotal": 0,
+          "outlinksBody": 0,
+          "outlinksTotal": 4,
+          "externalDomainsOut": 0,
+          "renderUsed": false
+        },
+        {
+          "id": "shop",
+          "kind": "hub",
+          "health": "hub",
+          "flags": [],
+          "title": "Shop | Example Shop",
+          "url": "https://example-shop.test/shop/",
+          "path": "/shop/",
+          "section": "shop",
+          "statusCode": 200,
+          "inSitemap": true,
+          "urlDepth": 1,
+          "clickDepth": 1,
+          "wordCount": 260,
+          "inlinksBody": 0,
+          "inlinksTotal": 1,
+          "outlinksBody": 5,
+          "outlinksTotal": 5,
+          "externalDomainsOut": 0,
+          "renderUsed": false
+        },
+        {
+          "id": "shop-lorem-lamp",
+          "kind": "page",
+          "health": "healthy",
+          "flags": [],
+          "title": "Lorem Lamp | Example Shop",
+          "url": "https://example-shop.test/shop/lorem-lamp/",
+          "path": "/shop/lorem-lamp/",
+          "section": "shop",
+          "statusCode": 200,
+          "inSitemap": true,
+          "urlDepth": 2,
+          "clickDepth": 2,
+          "wordCount": 528,
+          "inlinksBody": 4,
+          "inlinksTotal": 4,
+          "outlinksBody": 0,
+          "outlinksTotal": 0,
+          "externalDomainsOut": 0,
+          "renderUsed": false
+        },
+        {
+          "id": "shop-ipsum-chair",
+          "kind": "page",
+          "health": "healthy",
+          "flags": [],
+          "title": "Ipsum Chair | Example Shop",
+          "url": "https://example-shop.test/shop/ipsum-chair/",
+          "path": "/shop/ipsum-chair/",
+          "section": "shop",
+          "statusCode": 200,
+          "inSitemap": true,
+          "urlDepth": 2,
+          "clickDepth": 2,
+          "wordCount": 718,
+          "inlinksBody": 2,
+          "inlinksTotal": 2,
+          "outlinksBody": 0,
+          "outlinksTotal": 0,
+          "externalDomainsOut": 0,
+          "renderUsed": false
+        },
+        {
+          "id": "shop-dolor-table",
+          "kind": "page",
+          "health": "healthy",
+          "flags": [],
+          "title": "Dolor Table | Example Shop",
+          "url": "https://example-shop.test/shop/dolor-table/",
+          "path": "/shop/dolor-table/",
+          "section": "shop",
+          "statusCode": 200,
+          "inSitemap": true,
+          "urlDepth": 2,
+          "clickDepth": 2,
+          "wordCount": 555,
+          "inlinksBody": 4,
+          "inlinksTotal": 4,
+          "outlinksBody": 2,
+          "outlinksTotal": 2,
+          "externalDomainsOut": 0,
+          "renderUsed": false
+        },
+        {
+          "id": "shop-amet-shelf",
+          "kind": "page",
+          "health": "orphan",
+          "flags": [
+            "orphan"
+          ],
+          "title": "Amet Shelf | Example Shop",
+          "url": "https://example-shop.test/shop/amet-shelf/",
+          "path": "/shop/amet-shelf/",
+          "section": "shop",
+          "statusCode": 200,
+          "inSitemap": true,
+          "urlDepth": 2,
+          "clickDepth": 2,
+          "wordCount": 556,
+          "inlinksBody": 0,
+          "inlinksTotal": 0,
+          "outlinksBody": 0,
+          "outlinksTotal": 0,
+          "externalDomainsOut": 0,
+          "renderUsed": false
+        },
+        {
+          "id": "shop-consectetur-rug",
+          "kind": "page",
+          "health": "healthy",
+          "flags": [],
+          "title": "Lorem Lamp | Example Shop",
+          "url": "https://example-shop.test/shop/consectetur-rug/",
+          "path": "/shop/consectetur-rug/",
+          "section": "shop",
+          "statusCode": 200,
+          "inSitemap": true,
+          "urlDepth": 2,
+          "clickDepth": 2,
+          "wordCount": 403,
+          "inlinksBody": 2,
+          "inlinksTotal": 2,
+          "outlinksBody": 1,
+          "outlinksTotal": 1,
+          "externalDomainsOut": 0,
+          "renderUsed": false
+        },
+        {
+          "id": "shop-adipiscing-vase",
+          "kind": "page",
+          "health": "healthy",
+          "flags": [],
+          "title": "Adipiscing Vase | Example Shop",
+          "url": "https://example-shop.test/shop/adipiscing-vase/",
+          "path": "/shop/adipiscing-vase/",
+          "section": "shop",
+          "statusCode": 200,
+          "inSitemap": true,
+          "urlDepth": 2,
+          "clickDepth": 2,
+          "wordCount": 254,
+          "inlinksBody": 5,
+          "inlinksTotal": 5,
+          "outlinksBody": 4,
+          "outlinksTotal": 4,
+          "externalDomainsOut": 0,
+          "renderUsed": false
+        },
+        {
+          "id": "journal",
+          "kind": "hub",
+          "health": "hub",
+          "flags": [],
+          "title": "Journal | Example Shop",
+          "url": "https://example-shop.test/journal/",
+          "path": "/journal/",
+          "section": "journal",
+          "statusCode": 200,
+          "inSitemap": true,
+          "urlDepth": 1,
+          "clickDepth": 1,
+          "wordCount": 260,
+          "inlinksBody": 0,
+          "inlinksTotal": 1,
+          "outlinksBody": 4,
+          "outlinksTotal": 4,
+          "externalDomainsOut": 0,
+          "renderUsed": false
+        },
+        {
+          "id": "journal-sit-amet-notes",
+          "kind": "page",
+          "health": "healthy",
+          "flags": [],
+          "title": "Sit Amet Notes | Example Shop",
+          "url": "https://example-shop.test/journal/sit-amet-notes/",
+          "path": "/journal/sit-amet-notes/",
+          "section": "journal",
+          "statusCode": 200,
+          "inSitemap": true,
+          "urlDepth": 2,
+          "clickDepth": 2,
+          "wordCount": 139,
+          "inlinksBody": 2,
+          "inlinksTotal": 2,
+          "outlinksBody": 1,
+          "outlinksTotal": 2,
+          "externalDomainsOut": 1,
+          "renderUsed": false
+        },
+        {
+          "id": "journal-elit-sed-diary",
+          "kind": "page",
+          "health": "healthy",
+          "flags": [],
+          "title": "Elit Sed Diary | Example Shop",
+          "url": "https://example-shop.test/journal/elit-sed-diary/",
+          "path": "/journal/elit-sed-diary/",
+          "section": "journal",
+          "statusCode": 200,
+          "inSitemap": true,
+          "urlDepth": 2,
+          "clickDepth": 2,
+          "wordCount": 737,
+          "inlinksBody": 1,
+          "inlinksTotal": 1,
+          "outlinksBody": 2,
+          "outlinksTotal": 2,
+          "externalDomainsOut": 0,
+          "renderUsed": false
+        },
+        {
+          "id": "journal-tempor-guide",
+          "kind": "page",
+          "health": "healthy",
+          "flags": [],
+          "title": "Tempor Guide | Example Shop",
+          "url": "https://example-shop.test/journal/tempor-guide/",
+          "path": "/journal/tempor-guide/",
+          "section": "journal",
+          "statusCode": 200,
+          "inSitemap": true,
+          "urlDepth": 2,
+          "clickDepth": 2,
+          "wordCount": 566,
+          "inlinksBody": 2,
+          "inlinksTotal": 2,
+          "outlinksBody": 2,
+          "outlinksTotal": 3,
+          "externalDomainsOut": 1,
+          "renderUsed": false
+        },
+        {
+          "id": "journal-incididunt-story",
+          "kind": "page",
+          "health": "healthy",
+          "flags": [],
+          "title": "Incididunt Story: a very long made-up title that keeps going well past the sixty character display limit | Example Shop",
+          "url": "https://example-shop.test/journal/incididunt-story/",
+          "path": "/journal/incididunt-story/",
+          "section": "journal",
+          "statusCode": 200,
+          "inSitemap": true,
+          "urlDepth": 2,
+          "clickDepth": 2,
+          "wordCount": 690,
+          "inlinksBody": 2,
+          "inlinksTotal": 2,
+          "outlinksBody": 2,
+          "outlinksTotal": 2,
+          "externalDomainsOut": 0,
+          "renderUsed": false
+        },
+        {
+          "id": "journal-labore-review",
+          "kind": "page",
+          "health": "orphan",
+          "flags": [
+            "orphan"
+          ],
+          "title": "Labore Review | Example Shop",
+          "url": "https://example-shop.test/journal/labore-review/",
+          "path": "/journal/labore-review/",
+          "section": "journal",
+          "statusCode": 200,
+          "inSitemap": true,
+          "urlDepth": 2,
+          "clickDepth": 2,
+          "wordCount": 382,
+          "inlinksBody": 0,
+          "inlinksTotal": 0,
+          "outlinksBody": 0,
+          "outlinksTotal": 0,
+          "externalDomainsOut": 0,
+          "renderUsed": false
+        },
+        {
+          "id": "help",
+          "kind": "hub",
+          "health": "hub",
+          "flags": [],
+          "title": "Help | Example Shop",
+          "url": "https://example-shop.test/help/",
+          "path": "/help/",
+          "section": "help",
+          "statusCode": 200,
+          "inSitemap": true,
+          "urlDepth": 1,
+          "clickDepth": 1,
+          "wordCount": 260,
+          "inlinksBody": 0,
+          "inlinksTotal": 1,
+          "outlinksBody": 5,
+          "outlinksTotal": 5,
+          "externalDomainsOut": 0,
+          "renderUsed": false
+        },
+        {
+          "id": "help-dolore-shipping",
+          "kind": "page",
+          "health": "healthy",
+          "flags": [],
+          "title": "Dolore Shipping | Example Shop",
+          "url": "https://example-shop.test/help/dolore-shipping/",
+          "path": "/help/dolore-shipping/",
+          "section": "help",
+          "statusCode": 200,
+          "inSitemap": true,
+          "urlDepth": 2,
+          "clickDepth": 2,
+          "wordCount": 415,
+          "inlinksBody": 1,
+          "inlinksTotal": 1,
+          "outlinksBody": 4,
+          "outlinksTotal": 4,
+          "externalDomainsOut": 0,
+          "renderUsed": false
+        },
+        {
+          "id": "help-magna-returns",
+          "kind": "page",
+          "health": "healthy",
+          "flags": [],
+          "title": "Magna Returns | Example Shop",
+          "url": "https://example-shop.test/help/magna-returns/",
+          "path": "/help/magna-returns/",
+          "section": "help",
+          "statusCode": 200,
+          "inSitemap": true,
+          "urlDepth": 2,
+          "clickDepth": 2,
+          "wordCount": 610,
+          "inlinksBody": 3,
+          "inlinksTotal": 3,
+          "outlinksBody": 3,
+          "outlinksTotal": 3,
+          "externalDomainsOut": 0,
+          "renderUsed": false
+        },
+        {
+          "id": "help-aliqua-sizing",
+          "kind": "page",
+          "health": "redirect",
+          "flags": [
+            "redirect"
+          ],
+          "title": "Aliqua Sizing | Example Shop",
+          "url": "https://example-shop.test/help/aliqua-sizing/",
+          "path": "/help/aliqua-sizing/",
+          "section": "help",
+          "statusCode": 301,
+          "inSitemap": true,
+          "urlDepth": 2,
+          "clickDepth": 2,
+          "wordCount": 0,
+          "inlinksBody": 2,
+          "inlinksTotal": 2,
+          "outlinksBody": 0,
+          "outlinksTotal": 0,
+          "externalDomainsOut": 0,
+          "renderUsed": false
+        },
+        {
+          "id": "help-enim-care",
+          "kind": "page",
+          "health": "broken",
+          "flags": [
+            "broken"
+          ],
+          "title": "",
+          "url": "https://example-shop.test/help/enim-care/",
+          "path": "/help/enim-care/",
+          "section": "help",
+          "statusCode": 404,
+          "inSitemap": true,
+          "urlDepth": 2,
+          "clickDepth": 2,
+          "wordCount": 0,
+          "inlinksBody": 2,
+          "inlinksTotal": 2,
+          "outlinksBody": 0,
+          "outlinksTotal": 0,
+          "externalDomainsOut": 0,
+          "renderUsed": false
+        },
+        {
+          "id": "help-minim-contact",
+          "kind": "page",
+          "health": "healthy",
+          "flags": [],
+          "title": "Minim Contact | Example Shop",
+          "url": "https://example-shop.test/help/minim-contact/",
+          "path": "/help/minim-contact/",
+          "section": "help",
+          "statusCode": 200,
+          "inSitemap": true,
+          "urlDepth": 2,
+          "clickDepth": 2,
+          "wordCount": 90,
+          "inlinksBody": 5,
+          "inlinksTotal": 5,
+          "outlinksBody": 2,
+          "outlinksTotal": 2,
+          "externalDomainsOut": 0,
+          "renderUsed": false
+        },
+        {
+          "id": "company",
+          "kind": "hub",
+          "health": "hub",
+          "flags": [],
+          "title": "Company | Example Shop",
+          "url": "https://example-shop.test/company/",
+          "path": "/company/",
+          "section": "company",
+          "statusCode": 200,
+          "inSitemap": true,
+          "urlDepth": 1,
+          "clickDepth": 1,
+          "wordCount": 260,
+          "inlinksBody": 0,
+          "inlinksTotal": 1,
+          "outlinksBody": 4,
+          "outlinksTotal": 4,
+          "externalDomainsOut": 0,
+          "renderUsed": false
+        },
+        {
+          "id": "company-veniam-about",
+          "kind": "page",
+          "health": "healthy",
+          "flags": [],
+          "title": "Veniam About | Example Shop",
+          "url": "https://example-shop.test/company/veniam-about/",
+          "path": "/company/veniam-about/",
+          "section": "company",
+          "statusCode": 200,
+          "inSitemap": true,
+          "urlDepth": 2,
+          "clickDepth": 2,
+          "wordCount": 530,
+          "inlinksBody": 2,
+          "inlinksTotal": 2,
+          "outlinksBody": 0,
+          "outlinksTotal": 1,
+          "externalDomainsOut": 1,
+          "renderUsed": false
+        },
+        {
+          "id": "company-nostrud-team",
+          "kind": "page",
+          "health": "healthy",
+          "flags": [],
+          "title": "Nostrud Team | Example Shop",
+          "url": "https://example-shop.test/company/nostrud-team/",
+          "path": "/company/nostrud-team/",
+          "section": "company",
+          "statusCode": 200,
+          "inSitemap": true,
+          "urlDepth": 2,
+          "clickDepth": 2,
+          "wordCount": 826,
+          "inlinksBody": 2,
+          "inlinksTotal": 2,
+          "outlinksBody": 2,
+          "outlinksTotal": 2,
+          "externalDomainsOut": 0,
+          "renderUsed": false
+        },
+        {
+          "id": "company-exercitation-jobs",
+          "kind": "page",
+          "health": "healthy",
+          "flags": [],
+          "title": "Exercitation Jobs | Example Shop",
+          "url": "https://example-shop.test/company/exercitation-jobs/",
+          "path": "/company/exercitation-jobs/",
+          "section": "company",
+          "statusCode": 200,
+          "inSitemap": true,
+          "urlDepth": 2,
+          "clickDepth": 2,
+          "wordCount": 139,
+          "inlinksBody": 3,
+          "inlinksTotal": 3,
+          "outlinksBody": 2,
+          "outlinksTotal": 2,
+          "externalDomainsOut": 0,
+          "renderUsed": false
+        },
+        {
+          "id": "company-ullamco-press",
+          "kind": "page",
+          "health": "unlisted",
+          "flags": [
+            "unlisted"
+          ],
+          "title": "Ullamco Press | Example Shop",
+          "url": "https://example-shop.test/company/ullamco-press/",
+          "path": "/company/ullamco-press/",
+          "section": "company",
+          "statusCode": 200,
+          "inSitemap": false,
+          "urlDepth": 2,
+          "clickDepth": 2,
+          "wordCount": 529,
+          "inlinksBody": 1,
+          "inlinksTotal": 1,
+          "outlinksBody": 0,
+          "outlinksTotal": 0,
+          "externalDomainsOut": 0,
+          "renderUsed": false
+        },
+        {
+          "id": "ext-partner-one.test",
+          "kind": "external-domain",
+          "health": "external",
+          "flags": [],
+          "title": "partner-one.test",
+          "url": "https://partner-one.test/",
+          "path": "/",
+          "section": "external",
+          "statusCode": 0,
+          "inSitemap": false,
+          "urlDepth": 0,
+          "clickDepth": null,
+          "wordCount": 0,
+          "inlinksBody": 0,
+          "inlinksTotal": 2,
+          "outlinksBody": 0,
+          "outlinksTotal": 0,
+          "externalDomainsOut": 0,
+          "renderUsed": false
+        },
+        {
+          "id": "ext-partner-two.test",
+          "kind": "external-domain",
+          "health": "external",
+          "flags": [],
+          "title": "partner-two.test",
+          "url": "https://partner-two.test/",
+          "path": "/",
+          "section": "external",
+          "statusCode": 0,
+          "inSitemap": false,
+          "urlDepth": 0,
+          "clickDepth": null,
+          "wordCount": 0,
+          "inlinksBody": 0,
+          "inlinksTotal": 1,
+          "outlinksBody": 0,
+          "outlinksTotal": 0,
+          "externalDomainsOut": 0,
+          "renderUsed": false
+        }
+      ],
+      "edges": [
+        {
+          "id": "e0001",
+          "source": "home",
+          "target": "shop",
+          "kind": "sitemap-hierarchy"
+        },
+        {
+          "id": "e0002",
+          "source": "home",
+          "target": "shop",
+          "kind": "internal-chrome"
+        },
+        {
+          "id": "e0003",
+          "source": "shop",
+          "target": "shop-lorem-lamp",
+          "kind": "sitemap-hierarchy"
+        },
+        {
+          "id": "e0004",
+          "source": "shop",
+          "target": "shop-lorem-lamp",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0005",
+          "source": "shop",
+          "target": "shop-ipsum-chair",
+          "kind": "sitemap-hierarchy"
+        },
+        {
+          "id": "e0006",
+          "source": "shop",
+          "target": "shop-ipsum-chair",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0007",
+          "source": "shop",
+          "target": "shop-dolor-table",
+          "kind": "sitemap-hierarchy"
+        },
+        {
+          "id": "e0008",
+          "source": "shop",
+          "target": "shop-dolor-table",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0009",
+          "source": "shop",
+          "target": "shop-amet-shelf",
+          "kind": "sitemap-hierarchy"
+        },
+        {
+          "id": "e0010",
+          "source": "shop",
+          "target": "shop-consectetur-rug",
+          "kind": "sitemap-hierarchy"
+        },
+        {
+          "id": "e0011",
+          "source": "shop",
+          "target": "shop-consectetur-rug",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0012",
+          "source": "shop",
+          "target": "shop-adipiscing-vase",
+          "kind": "sitemap-hierarchy"
+        },
+        {
+          "id": "e0013",
+          "source": "shop",
+          "target": "shop-adipiscing-vase",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0014",
+          "source": "home",
+          "target": "journal",
+          "kind": "sitemap-hierarchy"
+        },
+        {
+          "id": "e0015",
+          "source": "home",
+          "target": "journal",
+          "kind": "internal-chrome"
+        },
+        {
+          "id": "e0016",
+          "source": "journal",
+          "target": "journal-sit-amet-notes",
+          "kind": "sitemap-hierarchy"
+        },
+        {
+          "id": "e0017",
+          "source": "journal",
+          "target": "journal-sit-amet-notes",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0018",
+          "source": "journal",
+          "target": "journal-elit-sed-diary",
+          "kind": "sitemap-hierarchy"
+        },
+        {
+          "id": "e0019",
+          "source": "journal",
+          "target": "journal-elit-sed-diary",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0020",
+          "source": "journal",
+          "target": "journal-tempor-guide",
+          "kind": "sitemap-hierarchy"
+        },
+        {
+          "id": "e0021",
+          "source": "journal",
+          "target": "journal-tempor-guide",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0022",
+          "source": "journal",
+          "target": "journal-incididunt-story",
+          "kind": "sitemap-hierarchy"
+        },
+        {
+          "id": "e0023",
+          "source": "journal",
+          "target": "journal-incididunt-story",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0024",
+          "source": "journal",
+          "target": "journal-labore-review",
+          "kind": "sitemap-hierarchy"
+        },
+        {
+          "id": "e0025",
+          "source": "home",
+          "target": "help",
+          "kind": "sitemap-hierarchy"
+        },
+        {
+          "id": "e0026",
+          "source": "home",
+          "target": "help",
+          "kind": "internal-chrome"
+        },
+        {
+          "id": "e0027",
+          "source": "help",
+          "target": "help-dolore-shipping",
+          "kind": "sitemap-hierarchy"
+        },
+        {
+          "id": "e0028",
+          "source": "help",
+          "target": "help-dolore-shipping",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0029",
+          "source": "help",
+          "target": "help-magna-returns",
+          "kind": "sitemap-hierarchy"
+        },
+        {
+          "id": "e0030",
+          "source": "help",
+          "target": "help-magna-returns",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0031",
+          "source": "help",
+          "target": "help-aliqua-sizing",
+          "kind": "sitemap-hierarchy"
+        },
+        {
+          "id": "e0032",
+          "source": "help",
+          "target": "help-aliqua-sizing",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0033",
+          "source": "help",
+          "target": "help-enim-care",
+          "kind": "sitemap-hierarchy"
+        },
+        {
+          "id": "e0034",
+          "source": "help",
+          "target": "help-enim-care",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0035",
+          "source": "help",
+          "target": "help-minim-contact",
+          "kind": "sitemap-hierarchy"
+        },
+        {
+          "id": "e0036",
+          "source": "help",
+          "target": "help-minim-contact",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0037",
+          "source": "home",
+          "target": "company",
+          "kind": "sitemap-hierarchy"
+        },
+        {
+          "id": "e0038",
+          "source": "home",
+          "target": "company",
+          "kind": "internal-chrome"
+        },
+        {
+          "id": "e0039",
+          "source": "company",
+          "target": "company-veniam-about",
+          "kind": "sitemap-hierarchy"
+        },
+        {
+          "id": "e0040",
+          "source": "company",
+          "target": "company-veniam-about",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0041",
+          "source": "company",
+          "target": "company-nostrud-team",
+          "kind": "sitemap-hierarchy"
+        },
+        {
+          "id": "e0042",
+          "source": "company",
+          "target": "company-nostrud-team",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0043",
+          "source": "company",
+          "target": "company-exercitation-jobs",
+          "kind": "sitemap-hierarchy"
+        },
+        {
+          "id": "e0044",
+          "source": "company",
+          "target": "company-exercitation-jobs",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0045",
+          "source": "company",
+          "target": "company-ullamco-press",
+          "kind": "sitemap-hierarchy"
+        },
+        {
+          "id": "e0046",
+          "source": "company",
+          "target": "company-ullamco-press",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0047",
+          "source": "shop-consectetur-rug",
+          "target": "shop-lorem-lamp",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0048",
+          "source": "company-nostrud-team",
+          "target": "shop-lorem-lamp",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0049",
+          "source": "help-dolore-shipping",
+          "target": "journal-sit-amet-notes",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0050",
+          "source": "help-minim-contact",
+          "target": "company-nostrud-team",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0051",
+          "source": "shop-adipiscing-vase",
+          "target": "shop-ipsum-chair",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0052",
+          "source": "shop-dolor-table",
+          "target": "help-minim-contact",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0053",
+          "source": "shop-dolor-table",
+          "target": "help-minim-contact",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0054",
+          "source": "shop-adipiscing-vase",
+          "target": "company-exercitation-jobs",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0055",
+          "source": "shop-adipiscing-vase",
+          "target": "help-minim-contact",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0056",
+          "source": "journal-tempor-guide",
+          "target": "company-veniam-about",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0057",
+          "source": "help-minim-contact",
+          "target": "shop-adipiscing-vase",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0058",
+          "source": "journal-elit-sed-diary",
+          "target": "help-minim-contact",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0059",
+          "source": "journal-incididunt-story",
+          "target": "company-exercitation-jobs",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0060",
+          "source": "company-nostrud-team",
+          "target": "help-magna-returns",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0061",
+          "source": "company-exercitation-jobs",
+          "target": "shop-consectetur-rug",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0062",
+          "source": "company-exercitation-jobs",
+          "target": "journal-incididunt-story",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0063",
+          "source": "help-magna-returns",
+          "target": "shop-lorem-lamp",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0064",
+          "source": "shop-adipiscing-vase",
+          "target": "help-magna-returns",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0065",
+          "source": "journal-sit-amet-notes",
+          "target": "shop-adipiscing-vase",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0066",
+          "source": "journal-incididunt-story",
+          "target": "shop-dolor-table",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0067",
+          "source": "journal-elit-sed-diary",
+          "target": "journal-tempor-guide",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0068",
+          "source": "help-dolore-shipping",
+          "target": "shop-dolor-table",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0069",
+          "source": "help-magna-returns",
+          "target": "shop-adipiscing-vase",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0070",
+          "source": "help-dolore-shipping",
+          "target": "shop-dolor-table",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0071",
+          "source": "journal-tempor-guide",
+          "target": "shop-adipiscing-vase",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0072",
+          "source": "help-dolore-shipping",
+          "target": "help-aliqua-sizing",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0073",
+          "source": "help-magna-returns",
+          "target": "help-enim-care",
+          "kind": "internal-body"
+        },
+        {
+          "id": "e0074",
+          "source": "journal-sit-amet-notes",
+          "target": "ext-partner-one.test",
+          "kind": "external"
+        },
+        {
+          "id": "e0075",
+          "source": "journal-tempor-guide",
+          "target": "ext-partner-one.test",
+          "kind": "external"
+        },
+        {
+          "id": "e0076",
+          "source": "company-veniam-about",
+          "target": "ext-partner-two.test",
+          "kind": "external"
+        }
+      ],
+      "audit": {
+        "findings": [
+          {
+            "id": "link-fix-broken",
+            "category": "links",
+            "tone": "attention",
+            "title": "Internal links to missing pages",
+            "targets": [
+              {
+                "url": "https://example-shop.test/help/enim-care/"
+              }
+            ]
+          },
+          {
+            "id": "link-fix-redirect",
+            "category": "links",
+            "tone": "review",
+            "title": "Internal links that redirect",
+            "targets": [
+              {
+                "url": "https://example-shop.test/help/aliqua-sizing/"
+              }
+            ]
+          },
+          {
+            "id": "orphan-page",
+            "category": "structure",
+            "tone": "review",
+            "title": "Pages nothing links to",
+            "targets": [
+              {
+                "url": "https://example-shop.test/shop/amet-shelf/"
+              },
+              {
+                "url": "https://example-shop.test/journal/labore-review/"
+              }
+            ]
+          },
+          {
+            "id": "seo:missing-meta-description",
+            "category": "metadata",
+            "tone": "attention",
+            "title": "Missing meta description",
+            "targets": [
+              {
+                "url": "https://example-shop.test/shop/ipsum-chair/"
+              },
+              {
+                "url": "https://example-shop.test/shop/dolor-table/"
+              }
+            ]
+          },
+          {
+            "id": "seo:missing-h1",
+            "category": "metadata",
+            "tone": "attention",
+            "title": "Missing H1",
+            "targets": [
+              {
+                "url": "https://example-shop.test/journal/tempor-guide/"
+              }
+            ]
+          },
+          {
+            "id": "seo:title-too-long",
+            "category": "metadata",
+            "tone": "review",
+            "title": "Title too long",
+            "targets": [
+              {
+                "url": "https://example-shop.test/journal/incididunt-story/"
+              }
+            ]
+          },
+          {
+            "id": "dup-title",
+            "category": "duplicates",
+            "tone": "review",
+            "title": "Duplicate titles",
+            "targets": [
+              {
+                "url": "https://example-shop.test/shop/lorem-lamp/"
+              },
+              {
+                "url": "https://example-shop.test/shop/consectetur-rug/"
+              }
+            ]
+          },
+          {
+            "id": "images-missing-alt",
+            "category": "accessibility",
+            "tone": "attention",
+            "title": "Images without alt text",
+            "targets": [
+              {
+                "url": "https://example-shop.test/shop/lorem-lamp/"
+              },
+              {
+                "url": "https://example-shop.test/shop/adipiscing-vase/"
+              }
+            ]
+          },
+          {
+            "id": "thin-content",
+            "category": "content",
+            "tone": "review",
+            "title": "Thin content",
+            "targets": [
+              {
+                "url": "https://example-shop.test/help/minim-contact/"
+              }
+            ]
+          },
+          {
+            "id": "unlisted-in-sitemap",
+            "category": "indexing",
+            "tone": "review",
+            "title": "Pages missing from the sitemap",
+            "targets": [
+              {
+                "url": "https://example-shop.test/company/ullamco-press/"
+              }
+            ]
+          },
+          {
+            "id": "slow-lab-lcp",
+            "category": "performance",
+            "tone": "attention",
+            "title": "Slow main content in lab test",
+            "targets": [
+              {
+                "url": "https://example-shop.test/shop/lorem-lamp/"
+              },
+              {
+                "url": "https://example-shop.test/"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "assets": {},
+  "modes": {
+    "guided": {
+      "estimatedMinutes": 12,
+      "steps": [
+        {
+          "id": "welcome",
+          "kind": "welcome",
+          "title": "Welcome, this is the review of Example Shop's website",
+          "body": [
+            "This walk-through explains what we found on your public website, what it means in everyday terms, and what is yours to decide.",
+            "It is a snapshot taken on one date. It is not live monitoring, and it does not include rankings, traffic or sales.",
+            "Each finding is marked so you can tell the difference between what we observed and what we think. \"Observed\" is something we saw. \"Our view\" is an opinion, and it comes with the reason behind it.",
+            "We start with the five things we would fix first. At the end you can send us your thoughts."
+          ]
+        },
+        {
+          "id": "orientation",
+          "kind": "orientation",
+          "title": "Your site in a few numbers",
+          "body": [
+            "These numbers set the scene. None of them is a score or a verdict on its own."
+          ],
+          "tiles": [
+            {
+              "label": "Pages mapped",
+              "value": "25",
+              "meaning": "How many pages of your site we could find and read."
+            },
+            {
+              "label": "Outside websites linked",
+              "value": "2",
+              "meaning": "Other websites your pages link to. Each is a place a visitor can leave to."
+            },
+            {
+              "label": "Pages nobody links to",
+              "value": "2",
+              "meaning": "Pages that exist but have no link path from the rest of your site."
+            },
+            {
+              "label": "Typical response time",
+              "value": "390 ms",
+              "meaning": "How quickly your server typically answers a request, before the page starts to draw."
+            },
+            {
+              "label": "Individual items flagged",
+              "value": "16",
+              "note": "Many are one cause repeated across pages.",
+              "meaning": "Individual items our checks raised. Many are one cause repeated across pages, so this is not a count of separate problems."
+            },
+            {
+              "label": "Certificate days left",
+              "value": "61",
+              "meaning": "Days until your site's security certificate expires. If it lapses, visitors see a warning."
+            }
+          ]
+        },
+        {
+          "id": "map",
+          "kind": "map",
+          "title": "Your website as a map",
+          "body": [
+            "Each dot is a page and the lines are the links between them. Drag to look around; the highlights show what each caption is about."
+          ],
+          "stops": [
+            {
+              "caption": {
+                "text": "We mapped 25 pages of your site and 2 outside websites it links to.",
+                "label": "FETCH",
+                "labelText": "Observed",
+                "sources": [
+                  {
+                    "path": "stats.pagesCrawled"
+                  },
+                  {
+                    "path": "stats.externalDomains"
+                  }
+                ]
+              },
+              "focus": {
+                "view": "globe"
+              }
+            },
+            {
+              "caption": {
+                "text": "2 pages returned an error or a redirect when we asked for it.",
+                "label": "FETCH",
+                "labelText": "Observed",
+                "sources": [
+                  {
+                    "path": "stats.brokenOrRedirectPages"
+                  }
+                ]
+              },
+              "focus": {
+                "view": "globe",
+                "health": "broken",
+                "filter": "issues"
+              }
+            },
+            {
+              "caption": {
+                "text": "The same 25 pages, grouped by how closely they link to one another: tightly linked pages sit together and loosely linked ones drift apart.",
+                "label": "FETCH",
+                "labelText": "Observed",
+                "sources": [
+                  {
+                    "path": "stats.pagesCrawled"
+                  }
+                ]
+              },
+              "focus": {
+                "view": "clusters"
+              }
+            },
+            {
+              "caption": {
+                "text": "The deepest page is 2 clicks from the homepage.",
+                "label": "FETCH",
+                "labelText": "Observed",
+                "sources": [
+                  {
+                    "path": "nodes[*].clickDepth"
+                  }
+                ]
+              },
+              "focus": {
+                "view": "road"
+              }
+            }
+          ]
+        },
+        {
+          "id": "g-slow-first-paint",
+          "kind": "finding",
+          "findingId": "slow-first-paint",
+          "title": "Your pages are slow to show their main content",
+          "tier": "top",
+          "rank": 1,
+          "beats": {
+            "found": [
+              {
+                "nodeIds": [
+                  "home",
+                  "shop-lorem-lamp"
+                ],
+                "text": "In our test load, the main content took between 2.6 and 3.4 seconds to appear across the 3 pages we sampled.",
+                "label": "LAB",
+                "labelText": "Lab test",
+                "sources": [
+                  {
+                    "finding": "slow-lab-lcp"
+                  },
+                  {
+                    "path": "siteIntel.browserAudit.pages[*].lab.lcpMs"
+                  }
+                ]
+              },
+              {
+                "nodeIds": [
+                  "home",
+                  "shop",
+                  "shop-lorem-lamp"
+                ],
+                "text": "The layout also jumped around while loading; the worst shift score was 0.12.",
+                "label": "LAB",
+                "labelText": "Lab test",
+                "sources": [
+                  {
+                    "path": "siteIntel.browserAudit.pages[*].lab.cls"
+                  }
+                ]
+              }
+            ],
+            "meaning": {
+              "inPlain": "When someone opens your pages, the main content takes longer to appear than it should. People tend to give up on a page that stays blank.",
+              "picture": "It is like a shop with a front door that sticks: the goods are fine, but some people turn around before they get in."
+            },
+            "ifIgnored": {
+              "text": "Visitors on slower connections are more likely to leave before they read your offer.",
+              "basis": "General web-performance practice. No analytics were supplied, so the effect on your business is not measured here."
+            },
+            "yourPart": "Agree that speed is worth a short investigation, and ask your developer or host for real-visitor speed data so we start from facts and not one test.",
+            "howFixed": [
+              "Pull real-visitor speed data (Search Console, CrUX) so the starting point is not a single lab run.",
+              "Run a waterfall on the homepage to find the largest element and what delays it.",
+              "Defer or remove scripts that load before the visitor does anything."
+            ],
+            "askYourTeam": [
+              "Has anyone timed the site on a phone on mobile data?",
+              "Which add-on scripts could we live without?"
+            ]
+          },
+          "terms": [
+            "lcp",
+            "lab-test",
+            "field-data",
+            "third-party"
+          ],
+          "checkpoint": {
+            "id": "cp-slow-first-paint",
+            "question": "How does this land?",
+            "options": [
+              "This is what I expected",
+              "This surprises me",
+              "I would like to discuss this"
+            ]
+          }
+        },
+        {
+          "id": "g-dead-links",
+          "kind": "finding",
+          "findingId": "dead-links",
+          "title": "Visitors and search engines run into dead or detoured links",
+          "tier": "top",
+          "rank": 2,
+          "beats": {
+            "found": [
+              {
+                "nodeIds": [
+                  "help-enim-care"
+                ],
+                "text": "1 link points to a page that returns 404 or 410.",
+                "label": "FETCH",
+                "labelText": "Observed",
+                "sources": [
+                  {
+                    "finding": "link-fix-broken"
+                  }
+                ]
+              },
+              {
+                "nodeIds": [
+                  "help-aliqua-sizing"
+                ],
+                "text": "1 link points to a URL that redirects instead of the final address.",
+                "label": "FETCH",
+                "labelText": "Observed",
+                "sources": [
+                  {
+                    "finding": "link-fix-redirect"
+                  }
+                ]
+              }
+            ],
+            "meaning": {
+              "inPlain": "Some links on your site lead to pages that do not work or that forward visitors on a detour.",
+              "picture": "It is a sign on your street pointing to a shop that has closed."
+            },
+            "ifIgnored": {
+              "text": "Visitors who hit an error are likely to leave, and search engines may spend their time on dead ends.",
+              "basis": "General crawling and usability practice; the size of the effect on this site is not measured."
+            },
+            "yourPart": "Decide, for each broken link, whether to remove it, repoint it or restore the page. Your agency can list them.",
+            "howFixed": [
+              "Fix or remove each broken link on the page that contains it.",
+              "Update redirected links to point straight at the final address."
+            ],
+            "askYourTeam": [
+              "Was a page removed or renamed recently?"
+            ]
+          },
+          "terms": [
+            "broken-link",
+            "redirect"
+          ],
+          "checkpoint": {
+            "id": "cp-dead-links",
+            "question": "How does this land?",
+            "options": [
+              "This is what I expected",
+              "This surprises me",
+              "I would like to discuss this"
+            ]
+          }
+        },
+        {
+          "id": "g-search-snippets",
+          "kind": "finding",
+          "findingId": "search-snippets",
+          "title": "Your search-result snippets are left to chance",
+          "tier": "top",
+          "rank": 3,
+          "beats": {
+            "found": [
+              {
+                "nodeIds": [
+                  "shop-ipsum-chair",
+                  "shop-dolor-table"
+                ],
+                "text": "2 pages have no meta description, so search engines write their own snippet.",
+                "label": "FETCH",
+                "labelText": "Observed",
+                "sources": [
+                  {
+                    "finding": "seo:missing-meta-description"
+                  }
+                ]
+              },
+              {
+                "nodeIds": [
+                  "journal-incididunt-story"
+                ],
+                "text": "1 page has titles long enough to be cut off in results.",
+                "label": "FETCH",
+                "labelText": "Observed",
+                "sources": [
+                  {
+                    "finding": "seo:title-too-long"
+                  }
+                ]
+              },
+              {
+                "nodeIds": [
+                  "journal-tempor-guide"
+                ],
+                "text": "1 page has no main heading.",
+                "label": "FETCH",
+                "labelText": "Observed",
+                "sources": [
+                  {
+                    "finding": "seo:missing-h1"
+                  }
+                ]
+              },
+              {
+                "nodeIds": [
+                  "shop-lorem-lamp",
+                  "shop-consectetur-rug"
+                ],
+                "text": "The same title is reused across 2 groups.",
+                "label": "FETCH",
+                "labelText": "Observed",
+                "sources": [
+                  {
+                    "finding": "dup-title"
+                  }
+                ]
+              }
+            ],
+            "meaning": {
+              "inPlain": "Many pages have no written title or description for search results, so Google picks words from the page for you.",
+              "picture": "It is a shop window with no sign, where a passer-by reads whatever happens to be in the glass."
+            },
+            "ifIgnored": {
+              "text": "Your results may read awkwardly or unclearly next to competitors who wrote theirs.",
+              "basis": "Search engines show their own text when none is supplied. How that affects clicks here is not measured."
+            },
+            "yourPart": "Supply or approve the wording for your most important pages: what you want a stranger to read about you.",
+            "howFixed": [
+              "Write a distinct title and description for each service page first, then the rest.",
+              "Set a canonical URL on every indexable page."
+            ],
+            "askYourTeam": [
+              "What do we want our top services to say in one line?"
+            ]
+          },
+          "terms": [
+            "title-meta"
+          ],
+          "checkpoint": {
+            "id": "cp-search-snippets",
+            "question": "How does this land?",
+            "options": [
+              "This is what I expected",
+              "This surprises me",
+              "I would like to discuss this"
+            ]
+          }
+        },
+        {
+          "id": "g-duplicate-and-hidden-pages",
+          "kind": "finding",
+          "findingId": "duplicate-and-hidden-pages",
+          "title": "Duplicate and hard-to-reach pages compete with your real content",
+          "view": "clusters",
+          "tier": "top",
+          "rank": 4,
+          "beats": {
+            "found": [
+              {
+                "nodeIds": [
+                  "shop-amet-shelf",
+                  "journal-labore-review"
+                ],
+                "text": "2 pages cannot be reached by following links from the homepage.",
+                "label": "FETCH",
+                "labelText": "Observed",
+                "sources": [
+                  {
+                    "finding": "orphan-page"
+                  },
+                  {
+                    "path": "stats.orphanPages"
+                  }
+                ]
+              }
+            ],
+            "meaning": {
+              "inPlain": "Some pages repeat each other and some real pages cannot be reached from the rest of the site.",
+              "picture": "It is like two near-identical brochures on the counter, and a third one filed in a cupboard nobody opens."
+            },
+            "ifIgnored": {
+              "text": "Search engines may pick the wrong page to show, and the hidden pages are unlikely to be found.",
+              "basis": "General search-engine behaviour; this review did not measure rankings or traffic."
+            },
+            "yourPart": "Tell us which version of each repeated page is the one you want people to see, and whether the unreachable pages should still exist.",
+            "howFixed": [
+              "Decide which archive and duplicate page types deserve to exist (category, tag, date, print versions).",
+              "Noindex or consolidate the rest, and stop linking to them from navigation."
+            ],
+            "askYourTeam": [
+              "Are these pages still in use?",
+              "Which page is the real one?"
+            ]
+          },
+          "terms": [
+            "orphan",
+            "duplicate",
+            "canonical"
+          ],
+          "checkpoint": {
+            "id": "cp-duplicate-and-hidden-pages",
+            "question": "How does this land?",
+            "options": [
+              "This is what I expected",
+              "This surprises me",
+              "I would like to discuss this"
+            ]
+          }
+        },
+        {
+          "id": "g-accessibility",
+          "kind": "finding",
+          "findingId": "accessibility",
+          "title": "Parts of the site are hard to use with assistive technology",
+          "tier": "top",
+          "rank": 5,
+          "beats": {
+            "found": [
+              {
+                "nodeIds": [
+                  "shop-lorem-lamp",
+                  "shop-adipiscing-vase"
+                ],
+                "text": "2 pages have images without alt text.",
+                "label": "FETCH",
+                "labelText": "Observed",
+                "sources": [
+                  {
+                    "finding": "images-missing-alt"
+                  }
+                ]
+              }
+            ],
+            "meaning": {
+              "inPlain": "Some parts of the site are hard to use for people who rely on screen readers or keyboards.",
+              "picture": "It is a building with a lovely entrance and no ramp."
+            },
+            "ifIgnored": {
+              "text": "Some visitors cannot complete tasks on your site, and accessibility expectations are increasingly part of procurement checks.",
+              "basis": "Accessibility guidelines and public-sector procurement practice. Automated checks cover only part of the guidelines."
+            },
+            "yourPart": "Decide how much of this to include in the next round of work, and consider a manual accessibility review.",
+            "howFixed": [
+              "Give every link, button and form field a clear accessible name.",
+              "Raise text contrast where the automated test flagged it.",
+              "Add alt text to meaningful images."
+            ],
+            "askYourTeam": [
+              "Do any of our clients require accessibility compliance?"
+            ]
+          },
+          "terms": [
+            "assistive-tech",
+            "alt-text"
+          ],
+          "checkpoint": {
+            "id": "cp-accessibility",
+            "question": "How does this land?",
+            "options": [
+              "This is what I expected",
+              "This surprises me",
+              "I would like to discuss this"
+            ]
+          }
+        },
+        {
+          "id": "g-indexing-signals",
+          "kind": "finding",
+          "findingId": "indexing-signals",
+          "title": "Some pages send mixed signals to search engines",
+          "view": "road",
+          "tier": "more",
+          "beats": {
+            "found": [
+              {
+                "nodeIds": [
+                  "company-ullamco-press"
+                ],
+                "text": "1 page is reachable by links but missing from the sitemap.",
+                "label": "FETCH",
+                "labelText": "Observed",
+                "sources": [
+                  {
+                    "finding": "unlisted-in-sitemap"
+                  }
+                ]
+              }
+            ],
+            "meaning": {
+              "inPlain": "Some pages tell search engines two different things about themselves, such as \"list me\" and \"do not list me\".",
+              "picture": "It is a door with both an OPEN and a CLOSED sign hanging on it."
+            },
+            "ifIgnored": {
+              "text": "Search engines may skip pages you want found, or show ones you meant to hide.",
+              "basis": "Conflicting directives are resolved by each search engine in its own way."
+            },
+            "yourPart": "Say which pages should appear in search and which should not.",
+            "howFixed": [
+              "Review each page and decide whether it should be indexed.",
+              "Make the tags, sitemap and internal links agree with that decision."
+            ],
+            "askYourTeam": [
+              "Are there pages we deliberately want hidden from search?"
+            ]
+          },
+          "terms": [
+            "indexing",
+            "canonical"
+          ],
+          "checkpoint": {
+            "id": "cp-indexing-signals",
+            "question": "How does this land?",
+            "options": [
+              "This is what I expected",
+              "This surprises me",
+              "I would like to discuss this"
+            ]
+          }
+        },
+        {
+          "id": "g-stale-or-thin-content",
+          "kind": "finding",
+          "findingId": "stale-or-thin-content",
+          "title": "Some content looks out of date or thin",
+          "tier": "more",
+          "beats": {
+            "found": [
+              {
+                "nodeIds": [
+                  "help-minim-contact"
+                ],
+                "text": "1 page has very little body text.",
+                "label": "FETCH",
+                "labelText": "Observed",
+                "sources": [
+                  {
+                    "finding": "thin-content"
+                  }
+                ]
+              }
+            ],
+            "meaning": {
+              "inPlain": "Some pages look out of date or say very little.",
+              "picture": "It is a notice board with last year's dates on it."
+            },
+            "ifIgnored": {
+              "text": "Visitors may doubt whether the business is current, and thin pages give search engines little to work with.",
+              "basis": "Visitor-trust and content-quality practice; not measured on this site."
+            },
+            "yourPart": "Choose which pages deserve a refresh, which to merge, and which to retire.",
+            "howFixed": [
+              "Review each flagged page: refresh, merge or retire it.",
+              "Add any missing trust pages."
+            ],
+            "askYourTeam": [
+              "Who owns keeping each section current?"
+            ]
+          },
+          "terms": [],
+          "checkpoint": {
+            "id": "cp-stale-or-thin-content",
+            "question": "How does this land?",
+            "options": [
+              "This is what I expected",
+              "This surprises me",
+              "I would like to discuss this"
+            ]
+          }
+        },
+        {
+          "id": "plan",
+          "kind": "plan",
+          "title": "A sensible order of work",
+          "body": [
+            "Quick, low-effort items come first. Each one has an owner, so nothing waits for someone who does not know it is theirs."
+          ],
+          "horizons": [
+            {
+              "id": "week-1",
+              "label": "First week",
+              "findingIds": [
+                "dead-links",
+                "search-snippets"
+              ]
+            },
+            {
+              "id": "month-1",
+              "label": "First month",
+              "findingIds": [
+                "slow-first-paint",
+                "indexing-signals"
+              ]
+            },
+            {
+              "id": "quarter",
+              "label": "This quarter",
+              "findingIds": [
+                "duplicate-and-hidden-pages",
+                "accessibility",
+                "stale-or-thin-content"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "limits",
+          "kind": "limits",
+          "title": "What this review does not tell you",
+          "body": [
+            "A fair reading includes the gaps. These are things this review did not measure."
+          ],
+          "claims": [
+            {
+              "text": "Real-visitor speed (field data) was not measured; speed figures come from a lab load.",
+              "label": "SCOPE",
+              "labelText": "Scope",
+              "sources": []
+            },
+            {
+              "nodeIds": [
+                "home",
+                "shop",
+                "shop-lorem-lamp"
+              ],
+              "text": "Browser tests covered 3 sampled pages, not the whole site.",
+              "label": "SCOPE",
+              "labelText": "Scope",
+              "sources": [
+                {
+                  "path": "siteIntel.browserAudit.pages"
+                }
+              ]
+            },
+            {
+              "text": "Security headers were read from the homepage response only.",
+              "label": "SCOPE",
+              "labelText": "Scope",
+              "sources": []
+            },
+            {
+              "text": "Rankings, traffic and conversions are not part of this data. No search or analytics account was connected.",
+              "label": "SCOPE",
+              "labelText": "Scope",
+              "sources": []
+            },
+            {
+              "text": "Automated accessibility rules cover only part of the guidelines; a manual review is still needed.",
+              "label": "SCOPE",
+              "labelText": "Scope",
+              "sources": []
+            }
+          ]
+        },
+        {
+          "id": "decisions",
+          "kind": "decisions",
+          "title": "Questions to take to your team",
+          "body": [
+            "You do not need to answer these now. They are the questions that will move the work forward."
+          ],
+          "questions": [
+            {
+              "findingId": "slow-first-paint",
+              "question": "Has anyone timed the site on a phone on mobile data?"
+            },
+            {
+              "findingId": "slow-first-paint",
+              "question": "Which add-on scripts could we live without?"
+            },
+            {
+              "findingId": "dead-links",
+              "question": "Was a page removed or renamed recently?"
+            },
+            {
+              "findingId": "search-snippets",
+              "question": "What do we want our top services to say in one line?"
+            },
+            {
+              "findingId": "duplicate-and-hidden-pages",
+              "question": "Are these pages still in use?"
+            },
+            {
+              "findingId": "duplicate-and-hidden-pages",
+              "question": "Which page is the real one?"
+            },
+            {
+              "findingId": "accessibility",
+              "question": "Do any of our clients require accessibility compliance?"
+            },
+            {
+              "findingId": "indexing-signals",
+              "question": "Are there pages we deliberately want hidden from search?"
+            },
+            {
+              "findingId": "stale-or-thin-content",
+              "question": "Who owns keeping each section current?"
+            }
+          ]
+        },
+        {
+          "id": "send",
+          "kind": "send",
+          "title": "Tell us what you think",
+          "body": [
+            "Your answers and any notes below are only on this device until you choose to send them.",
+            "Check the summary, add anything you like, then send it to us by email."
+          ]
+        }
+      ],
+      "tour": [
+        "welcome",
+        "orientation",
+        "map",
+        "g-slow-first-paint",
+        "g-dead-links",
+        "g-search-snippets",
+        "g-duplicate-and-hidden-pages",
+        "g-accessibility",
+        "plan",
+        "limits",
+        "decisions",
+        "send"
+      ],
+      "more": [
+        "g-indexing-signals",
+        "g-stale-or-thin-content"
+      ],
+      "top": {
+        "findingIds": [
+          "slow-first-paint",
+          "dead-links",
+          "search-snippets",
+          "duplicate-and-hidden-pages",
+          "accessibility"
+        ],
+        "picked": "auto",
+        "basis": "Ranked by priority level first, then by how many distinct pages are affected. A site-wide issue counts as every page."
+      },
+      "responses": {
+        "schema": "webobs.client-responses/1",
+        "note": "The viewer records the recipient's checkpoint answers and comments as { reportId, answers, comments } and lets them email it to the agency. This file never contains them."
+      }
+    }
+  }
+}

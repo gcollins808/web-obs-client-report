@@ -1,0 +1,113 @@
+# Drop-in compose file for plain "docker compose" (Portainer users: deploy/VPS-STACK-tunnel-both.yml, see docs/SETUP.md).
+#
+#   cp deploy/.env.example deploy/.env      # fill in the values; keep .env out of git
+#   docker volume create webobs-data        # once
+#   docker compose -f deploy/docker-compose.yml up -d                              # viewer only
+#   COMPOSE_PROFILES=ingest docker compose -f deploy/docker-compose.yml up -d      # viewer + ingest (also needs INGEST_ENABLED=1)
+#   COMPOSE_PROFILES=ingest,cleanup docker compose -f deploy/docker-compose.yml up -d   # plus the daily cleanup loop
+#
+# Ingest needs BOTH the "ingest" profile (starts the container) and INGEST_ENABLED=1 (lets it run). With the profile but the switch
+# off it prints one line and idles (503, shown as unhealthy on purpose); switched on but misconfigured (short secret, Access settings missing) it exits 1 with a plain reason.
+# Without Cloudflare Access (NOT recommended, docs/SETUP.md): INGEST_REQUIRE_ACCESS_HEADER=0 plus INGEST_ACKNOWLEDGE_NO_EDGE_AUTH=yes, a 48+ character
+# secret and CLIENT_IP_HEADER set to your reverse proxy's header; without the acknowledgment the ingest exits 1.
+#
+# Nothing publishes a port. The Cloudflare tunnel (cloudflared on the network below) has two routes on one hostname, in this order:
+#   1. path ingest/*  -> http://ingest:8081   (above the catch-all; a Cloudflare Access service-token application on <host>/ingest*)
+#   2. (no path)      -> http://report:8080   (the viewer, public, no Access login)
+name: webobs
+
+x-hardening: &hardening
+  image: ${WEBOBS_IMAGE:-ghcr.io/OWNER/web-obs-client-report:v0.1.7}
+  read_only: true
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+  networks:
+    - tunnel
+
+services:
+  report:
+    <<: *hardening
+    container_name: webobs-report
+    restart: unless-stopped
+    environment:
+      WEBOBS_REPORT_BASE: ${WEBOBS_REPORT_BASE:?set WEBOBS_REPORT_BASE (https://your-host, no trailing slash)}
+      TRUST_PROXY: "1"                                 # only the tunnel can reach this container
+      CLIENT_IP_HEADER: ${CLIENT_IP_HEADER:-CF-Connecting-IP}   # rate-limit caller header; without Cloudflare: your proxy's (e.g. X-Real-IP)
+      REPORT_SOURCE: directory
+      RETENTION_DAYS: ${RETENTION_DAYS:-90}
+      MAIL_MODE: ${MAIL_MODE:-outbox}
+      OUTBOX_DIR: /outbox
+      WEBOBS_FEEDBACK_TO: ${WEBOBS_FEEDBACK_TO:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}              # SECRET, only with MAIL_MODE=resend
+      RESEND_FROM: ${RESEND_FROM:-}
+    volumes:
+      - webobs-data:/data:ro                           # read-only for the viewer
+    tmpfs:
+      - /tmp
+      - /outbox:uid=1000,gid=1000                      # feedback scratch while MAIL_MODE=outbox; gone on restart
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/healthz').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  ingest:
+    <<: *hardening
+    profiles: ["ingest"]
+    container_name: webobs-ingest
+    restart: unless-stopped
+    command: ["node", "ingest/ingest.mjs"]
+    environment:
+      INGEST_ENABLED: ${INGEST_ENABLED:-0}
+      INGEST_SECRET: ${INGEST_SECRET:-}                # SECRET, 32+ characters (48+ without Cloudflare Access)
+      INGEST_REQUIRE_ACCESS_HEADER: ${INGEST_REQUIRE_ACCESS_HEADER:-1}   # 1 = verify the Cloudflare Access token (keep it); 0 = no Cloudflare, NOT recommended
+      INGEST_ACKNOWLEDGE_NO_EDGE_AUTH: ${INGEST_ACKNOWLEDGE_NO_EDGE_AUTH:-}  # 'yes' ONLY when you deliberately run without Cloudflare Access
+      CF_ACCESS_TEAM_DOMAIN: ${CF_ACCESS_TEAM_DOMAIN:-}
+      CF_ACCESS_AUD: ${CF_ACCESS_AUD:-}
+      WEBOBS_REPORT_BASE: ${WEBOBS_REPORT_BASE:?set WEBOBS_REPORT_BASE (https://your-host, no trailing slash)}
+      TRUST_PROXY: "1"
+      CLIENT_IP_HEADER: ${CLIENT_IP_HEADER:-CF-Connecting-IP}   # rate-limit caller header; without Cloudflare: your proxy's (e.g. X-Real-IP)
+      INGEST_REPORTS_DIR: /data/reports
+      INGEST_REGISTRY_DIR: /data/registry
+      INGEST_AUDIT_LOG: /data/audit/ingest.log
+      INGEST_AUDIT_MAX_BYTES: ${INGEST_AUDIT_MAX_BYTES:-1048576}   # the audit log rotates at this size (bytes)
+      INGEST_AUDIT_KEEP: ${INGEST_AUDIT_KEEP:-3}                  # and this many old files stay
+    volumes:
+      - webobs-data:/data                              # read-write: the only writer of reports and links
+    tmpfs:
+      - /tmp
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8081/healthz').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  # Removes expired and revoked links and their reports once a day (the viewer cannot: it mounts the volume read-only).
+  # Try it first by hand with --dry-run (docs/SETUP.md, step 9).
+  cleanup:
+    <<: *hardening
+    profiles: ["cleanup"]
+    container_name: webobs-cleanup
+    restart: unless-stopped
+    init: true                                         # so "docker compose stop" ends the sleep at once
+    command: ["sh", "-c", "while true; do node tools/cleanup.mjs --reports /data/reports --registry /data/registry; sleep 86400; done"]
+    volumes:
+      - webobs-data:/data                              # read-write: it deletes expired files
+    tmpfs:
+      - /tmp
+    # The image's own health check probes the viewer port, which this service does not open.
+    healthcheck:
+      disable: true
+
+volumes:
+  webobs-data:
+    external: true
+
+networks:
+  tunnel:
+    external: true
+    name: ${TUNNEL_NETWORK:-tunnel}               # the network your cloudflared container is on (docker network ls)

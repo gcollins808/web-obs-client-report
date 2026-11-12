@@ -1,0 +1,20 @@
+# Secret scan of every push and pull request. Uses no secrets: the action's licence key is only
+# needed for organisation accounts, and GITHUB_TOKEN is the built-in token GitHub provides to the run (read-only here).
+name: gitleaks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}

@@ -1,0 +1,137 @@
+diff --git a/vendor/web-obs/components/SiteGlobeCanvas3D.tsx b/vendor/web-obs/components/SiteGlobeCanvas3D.tsx
+index 1577f4d..6ead1f2 100644
+--- a/vendor/web-obs/components/SiteGlobeCanvas3D.tsx
++++ b/vendor/web-obs/components/SiteGlobeCanvas3D.tsx
+@@ -37,6 +37,8 @@ interface SiteGlobeCanvas3DProps {
+   hoveredId: string | null;
+   filter: NodeFilter;
+   searchQuery: string;
++  /** Report tour: ids of the pages to bring forward. Every other page fades, like a search match. */
++  highlightIds?: ReadonlySet<string> | null;
+   showExternal: boolean;
+   showChromeLinks: boolean;
+   showAllLinks: boolean;
+@@ -386,6 +388,7 @@ export const SiteGlobeCanvas3D: React.FC<SiteGlobeCanvas3DProps> = ({
+   hoveredId,
+   filter,
+   searchQuery,
++  highlightIds = null,
+   showExternal,
+   showChromeLinks,
+   showAllLinks,
+@@ -436,6 +439,7 @@ export const SiteGlobeCanvas3D: React.FC<SiteGlobeCanvas3DProps> = ({
+     hoveredId,
+     filter,
+     searchQuery,
++    highlightIds,
+     showExternal,
+     showChromeLinks,
+     showAllLinks,
+@@ -454,6 +458,7 @@ export const SiteGlobeCanvas3D: React.FC<SiteGlobeCanvas3DProps> = ({
+     hoveredId,
+     filter,
+     searchQuery,
++    highlightIds,
+     showExternal,
+     showChromeLinks,
+     showAllLinks,
+@@ -1583,6 +1588,7 @@ export const SiteGlobeCanvas3D: React.FC<SiteGlobeCanvas3DProps> = ({
+       const hoverId = labelHoverId ?? st.hoveredId;
+       const focusId = hoverId ?? st.selectedId;
+       labelRenderer.domElement.classList.toggle('is-hovering-node', hoverId !== null);
++      labelRenderer.domElement.classList.toggle('is-highlighting', Boolean(st.highlightIds));
+       const connectedIds = new Set<string>();
+       if (focusId) {
+         connectedIds.add(focusId);
+@@ -1595,6 +1601,7 @@ export const SiteGlobeCanvas3D: React.FC<SiteGlobeCanvas3DProps> = ({
+       }
+ 
+       const query = st.searchQuery.trim().toLowerCase();
++      const searching = Boolean(query) || Boolean(st.highlightIds);
+       const targetMap =
+         st.viewMode === 'road'
+           ? layouts.road
+@@ -1633,14 +1640,16 @@ export const SiteGlobeCanvas3D: React.FC<SiteGlobeCanvas3DProps> = ({
+         const allowedByFilter = matchesFilter(entry.node, st.filter, st.showExternal, st.attention);
+         entry.visible = allowedByFilter;
+         const matchesQuery =
+-          !query ||
++          (!st.highlightIds || st.highlightIds.has(id)) && (!query ||
+           entry.node.title.toLowerCase().includes(query) ||
+           entry.node.path.toLowerCase().includes(query) ||
+-          entry.node.url.toLowerCase().includes(query);
++          entry.node.url.toLowerCase().includes(query));
+         const hex = palette[entry.node.health] ?? palette.healthy;
+         const isDirect = id === focusId;
+         const isNeighbor = focusId ? connectedIds.has(id) : true;
+-        const dimmed = entry.node.kind !== 'home' && ((Boolean(focusId) && !isNeighbor) || (Boolean(query) && !matchesQuery));
++        // The home node stays lit unless a report tour is highlighting pages that do not include it.
++        const homeDim = entry.node.kind === 'home' && Boolean(st.highlightIds) && !st.highlightIds!.has(id);
++        const dimmed = homeDim || (entry.node.kind !== 'home' && ((Boolean(focusId) && !isNeighbor) || (searching && !matchesQuery)));
+ 
+         const home = entry.home;
+         if (home) {
+@@ -1649,8 +1658,9 @@ export const SiteGlobeCanvas3D: React.FC<SiteGlobeCanvas3DProps> = ({
+           if (allowedByFilter) {
+             home.coreMat.color.setHex(hex);
+             home.coreMat.emissive.setHex(hex);
+-            home.coreMat.opacity = 1;
+-            home.coreMat.transparent = false;
++            if (home.coreMat.transparent !== homeDim) { home.coreMat.transparent = homeDim; home.coreMat.needsUpdate = true; }
++            home.coreMat.opacity = homeDim ? 0.2 : 1;
++            if (entry.badge) { entry.badge.material.transparent = true; entry.badge.material.opacity = homeDim ? 0.25 : 1; }
+             home.coreMat.emissiveIntensity = isDirect ? 0.85 : 0.32;
+           }
+         }
+@@ -1660,7 +1670,7 @@ export const SiteGlobeCanvas3D: React.FC<SiteGlobeCanvas3DProps> = ({
+           entry.posDirty = moving;
+           const v = inst.visuals;
+           // Something is selected, hovered or searched: linked orbs and matches light up, the rest recede.
+-          const focusing = Boolean(focusId) || Boolean(query);
++          const focusing = Boolean(focusId) || searching;
+           const targetOpacity = dimmed ? v.dimOpacity : focusing ? v.highlightOpacity : v.defaultOpacity;
+           const targetGlow = isDirect ? v.glowSelected : dimmed ? v.glowDim : v.glowDefault;
+           const targetHalo = !allowedByFilter ? 0 : isDirect ? v.haloAlphaSelected : dimmed ? v.haloAlphaDim : v.haloAlphaDefault;
+@@ -1706,14 +1716,19 @@ export const SiteGlobeCanvas3D: React.FC<SiteGlobeCanvas3DProps> = ({
+           return;
+         }
+         const linked = Boolean(focusId) && connectedIds.has(id);
+-        if (!(isDirect || id === hoverId || id === st.selectedId || linked || (query && matchesQuery) || resting.has(id))) {
++        // A report tour is highlighting pages: the pages it fades lose their labels too, as they do when something is hovered.
++        if (st.highlightIds && !matchesQuery && !isDirect && id !== hoverId && id !== st.selectedId) {
++          unbindLabel(entry);
++          return;
++        }
++        if (!(isDirect || id === hoverId || id === st.selectedId || linked || (searching && matchesQuery) || resting.has(id))) {
+           unbindLabel(entry);
+           return;
+         }
+ 
+         let priority = 10;
+         if (isDirect) priority = 100;
+-        else if (query && matchesQuery) priority = 90;
++        else if (searching && matchesQuery) priority = 90;
+         else if (entry.node.kind === 'home') priority = 86;
+         else if (linked) priority = 80;
+         else if (entry.node.kind === 'hub') priority = 60;
+@@ -2070,7 +2085,7 @@ export const SiteGlobeCanvas3D: React.FC<SiteGlobeCanvas3DProps> = ({
+       // globe just re-places the labels, which is all that depends on the view.
+       const camMoved = !camera.position.equals(lastCamPos) || !camera.quaternion.equals(lastCamQuat);
+       const key = [
+-        st.viewMode, st.theme, st.selectedId ?? '', st.hoveredId ?? '', labelHoverId ?? '', st.filter, st.searchQuery,
++        st.viewMode, st.theme, st.selectedId ?? '', st.hoveredId ?? '', labelHoverId ?? '', st.filter, st.searchQuery, st.highlightIds ? [...st.highlightIds].join(',') : '',
+         st.showExternal, st.showChromeLinks, st.showAllLinks, st.showPulses, st.autoRotate,
+       ].join('|');
+       const keyChanged = key !== lastKey || st.manifest !== lastManifestRef || st.layouts !== lastLayoutsRef ||
+diff --git a/vendor/web-obs/styles/theme.css b/vendor/web-obs/styles/theme.css
+index ba33f5f..bc8e24e 100644
+--- a/vendor/web-obs/styles/theme.css
++++ b/vendor/web-obs/styles/theme.css
+@@ -1350,6 +1350,7 @@
+ /* Show the hovered page and its direct connections without unrelated labels. */
+ .wo-shell .wo-node-pill.is-hidden,
+ .wo-shell .wo-css2d-layer.is-hovering-node .wo-node-pill:not(.is-hover-context),
++.wo-shell .wo-css2d-layer.is-highlighting .wo-sector-tag,
+ .wo-shell .wo-css2d-layer.is-hovering-node .wo-sector-tag {
+   visibility: hidden;
+   opacity: 0;

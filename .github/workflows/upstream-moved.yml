@@ -1,0 +1,31 @@
+# Placeholder, not run yet. Weekly report: has upstream web-obs moved past the commit in UPSTREAM.md?
+# It only reports into the job summary: no pull request, no merge, no change to the repository.
+name: upstream-moved
+on:
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - name: Compare upstream with UPSTREAM.md
+        run: |
+          result="$(node scripts/upstream-moved.mjs)"
+          echo "$result"
+          {
+            echo "### Upstream web-obs"
+            echo ""
+            echo "$result"
+            echo ""
+            echo "To update: see UPSTREAM.md, How to update (npm run sync:upstream). Nothing was changed by this job."
+          } >> "$GITHUB_STEP_SUMMARY"

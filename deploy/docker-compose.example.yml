@@ -1,0 +1,109 @@
+# Example only: copy it, change the paths and the network name, and keep your copy out of git.
+#
+# The report container:
+#   - publishes NO ports. Nothing on the host or the internet can reach it directly.
+#   - joins the Docker network that your Cloudflare Zero Trust tunnel (cloudflared, running in a container) is on.
+#   - reads reports and the link registry from folders mounted READ-ONLY. It cannot change or delete them.
+#   - has a read-only root filesystem, no extra privileges, and runs as an unprivileged user.
+#
+# In Cloudflare Zero Trust, the tunnel's public hostname audit.example.com points at  http://report:8080
+# (the service name below and the container port). Cloudflare adds HTTPS; the server trusts the proxy headers because
+# nothing else can reach it (TRUST_PROXY=1 is set below, in this file: it is NOT baked into the image).
+#
+# Build once from the project root, then start:
+#   docker build -f deploy/Dockerfile -t webobs-report:local .
+#   docker compose -f deploy/docker-compose.example.yml up -d
+#
+# Secrets (the Resend key, the feedback address) go in an env file next to your copy of this file, never in the image:
+#   copy .env.example to report.env and fill it in. Do not put report folders or the registry in it.
+
+services:
+  report:
+    image: webobs-report:local
+    container_name: webobs-report
+    restart: unless-stopped
+    env_file:
+      - ./report.env
+    environment:
+      # Public address, for the links the tools print (this container only serves them).
+      WEBOBS_REPORT_BASE: https://audit.example.com
+      # Where reports come from. "directory" reads /data/reports (mounted below).
+      REPORT_SOURCE: directory
+      # Set on purpose, not baked into the image: only cloudflared can reach this container (no ports, internal network), so the
+      # Cloudflare headers (CF-Connecting-IP, X-Forwarded-Proto) can be trusted. Never set this if the container is reachable any other way.
+      TRUST_PROXY: "1"
+      # Days a report is served at most (the cleanup job below deletes expired ones).
+      RETENTION_DAYS: "90"
+    volumes:
+      - /srv/webobs/reports:/data/reports:ro
+      - /srv/webobs/registry:/data/registry:ro
+      # Only needed while MAIL_MODE is outbox (no Resend key yet). Remove this line, and the next one, when Resend is set.
+      - /srv/webobs/outbox:/data/outbox
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - tunnel
+    # No "ports:" on purpose.
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/healthz').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 30s
+      timeout: 3s
+      start_period: 5s
+
+  # OPTIONAL: the HTTPS ingest. Remove this whole service (and apps/server/ingest/) if you do not use it.
+  # The only container with a WRITE mount. Own internal port 8081, reached on the same hostname through a second tunnel route:
+  # path ingest/* (audit.example.com/ingest/*) -> http://ingest:8081. Put a Cloudflare Access application on audit.example.com/ingest/*
+  # only, with a policy that accepts only your service token. The viewer's route never reaches this container.
+  ingest:
+    image: webobs-report:local
+    container_name: webobs-ingest
+    restart: unless-stopped
+    # Not started by a plain "up": it needs  --profile ingest.  Do NOT start it on a live host until you have read docs/INGEST-SECURITY.md.
+    profiles: ["ingest"]
+    command: ["node", "ingest/ingest.mjs"]
+    env_file:
+      - ./report.env
+    environment:
+      # Off unless you set INGEST_ENABLED=1 for this run. CF_ACCESS_TEAM_DOMAIN, CF_ACCESS_AUD and INGEST_SECRET are in report.env.
+      INGEST_ENABLED: "${INGEST_ENABLED:-0}"
+      TRUST_PROXY: "1"
+      INGEST_REQUIRE_ACCESS_HEADER: "1"
+      WEBOBS_REPORT_BASE: https://audit.example.com
+      INGEST_REPORTS_DIR: /data/reports
+      INGEST_REGISTRY_DIR: /data/registry
+      INGEST_AUDIT_LOG: /data/audit/ingest.log
+    volumes:
+      - /srv/webobs/reports:/data/reports
+      - /srv/webobs/registry:/data/registry
+      - /srv/webobs/audit:/data/audit
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - tunnel
+    # No "ports:" on purpose. INGEST_SECRET is in report.env, never in this file.
+    # The image's own health check probes port 8080; this process listens on 8081, so it has its own.
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8081/healthz').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 30s
+      timeout: 3s
+      start_period: 5s
+
+networks:
+  tunnel:
+    # The network your cloudflared container is already on. Find its name with:  docker network ls
+    external: true
+    name: cloudflared_tunnel
+
+# Cleanup runs on the HOST (the container cannot delete: its folders are read-only). For example with cron, daily at 03:15:
+#   15 3 * * *  cd /srv/webobs/app && node apps/server/tools/cleanup.mjs --reports /srv/webobs/reports --registry /srv/webobs/registry
+# or a systemd timer that runs the same command. Try it first with --dry-run.

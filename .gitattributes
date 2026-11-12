@@ -1,0 +1,4 @@
+# The vendored web-obs files are checked byte for byte against the sha256 hashes in UPSTREAM.md
+# (scripts/check-vendor-drift.mjs), so git must never change their line endings on checkout.
+vendor/web-obs/** -text
+patches/*.patch -text

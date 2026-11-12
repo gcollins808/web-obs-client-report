@@ -1,0 +1,191 @@
+/* Client Report Package viewer: guided tour card and presentation stage, layered over the 3D globe. */
+.pv-root { position: relative; min-height: 100vh; overflow: hidden; }
+.pv-noglobe { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); }
+.pv-seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; backdrop-filter: blur(10px); }
+.rp-tools .pv-seg button { border: 0; border-radius: 0; }
+
+.pv-card { position: absolute; z-index: 5; top: 76px; right: 22px; bottom: 22px; width: min(440px, calc(100vw - 44px)); display: flex; flex-direction: column;
+  background: var(--rp-card-glass, color-mix(in srgb, var(--bg) 84%, transparent)); backdrop-filter: blur(18px) saturate(1.2); border: 1px solid var(--line); border-radius: 18px;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.35); animation: pv-in 0.35s ease both; outline: none; }
+.pv-card.wide { width: min(560px, calc(100vw - 44px)); }
+.pv-card-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px 0; font-size: 0.82rem; color: var(--muted); }
+.pv-step { font-weight: 650; letter-spacing: 0.04em; text-transform: uppercase; }
+.pv-card-body { scrollbar-width: thin; scrollbar-color: var(--line) transparent; padding: 6px 20px 14px; overflow: auto; flex: 1; font-size: 0.97rem; line-height: 1.55; }
+.pv-card-body h2 { font-size: 1.45rem; line-height: 1.2; margin: 0.5em 0 0.4em; max-width: none; }
+.pv-card-body h3 { margin: 1.1rem 0 0.35rem; }
+.pv-card-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 20px 16px; border-top: 1px solid var(--line); }
+.pv-dots { display: flex; gap: 6px; } .pv-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
+.pv-dots i.done { background: color-mix(in srgb, var(--rp-accent) 55%, transparent); } .pv-dots i.on { background: var(--rp-accent); transform: scale(1.3); }
+.pv-btn { background: var(--chip); color: var(--ink); border: 1px solid var(--line); border-radius: 10px; padding: 0.5rem 0.95rem; cursor: pointer; }
+.pv-btn:hover:not(:disabled) { border-color: var(--rp-accent); } .pv-btn:disabled { opacity: 0.4; cursor: default; }
+.pv-btn.primary, .pv-btn[aria-pressed='true'] { background: var(--rp-accent); color: var(--rp-on-accent); border-color: transparent; }
+.pv-link { background: none; border: 0; padding: 0; color: var(--rp-accent); cursor: pointer; text-decoration: underline; font-size: inherit; text-align: left; }
+.pv-link.big { font-size: 1rem; text-decoration: none; font-weight: 600; padding: 6px 0; }
+.pv-top { background: var(--rp-accent) !important; color: var(--rp-on-accent) !important; border-color: transparent !important; }
+.pv-note { background: color-mix(in srgb, var(--rp-accent) 14%, transparent); border-radius: 10px; padding: 8px 12px; font-size: 0.9rem; }
+.pv-claims { list-style: none; margin: 0; padding: 0; } .pv-claims li { margin: 0.45rem 0; }
+.pv-bullets { padding-left: 1.15rem; margin: 0.4rem 0; } .pv-bullets li { margin: 0.3rem 0; }
+.pv-list { padding-left: 1.2rem; }
+.pv-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 0.6rem; }
+.pv-tile { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; background: var(--chip); }
+.pv-tile b { font-size: 1.6rem; } .pv-tile small { color: var(--muted); }
+.pv-caption { font-weight: 600; } .pv-stops { display: flex; gap: 8px; margin: 8px 0; }
+.pv-term { border: 1px dashed var(--line); background: none; color: var(--ink); border-radius: 8px; padding: 2px 9px; margin: 2px 4px 2px 0; cursor: pointer; font-size: 0.88rem; }
+.pv-term[aria-expanded='true'] { border-color: var(--rp-accent); }
+.pv-def { background: var(--chip); border-radius: 10px; padding: 8px 12px; font-size: 0.9rem; }
+.pv-opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.pv-shot img { max-width: 100%; border-radius: 10px; } .pv-shot figcaption { color: var(--muted); font-size: 0.82rem; }
+.pv-card details { margin: 0.4rem 0; } .pv-card summary { cursor: pointer; color: var(--rp-accent); }
+
+/* presentation */
+.pv-stage { position: absolute; inset: 60px 0 70px; display: grid; place-items: center; z-index: 4; outline: none; padding: 0 5vw; }
+.pv-stage.bar { place-items: end stretch; padding: 0 3vw 12px; pointer-events: none; }
+.pv-slide { max-width: 1000px; width: 100%; animation: pv-in 0.4s ease both; }
+.pv-slide .pv-bullets li, .pv-slide .pv-claims li { font-size: 1.2rem; }
+.pv-hz { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+.pv-bar-body { pointer-events: auto; max-width: 980px; background: var(--rp-card-glass, color-mix(in srgb, var(--bg) 86%, transparent)); backdrop-filter: blur(16px); border: 1px solid var(--line); border-radius: 18px; padding: 16px 24px; animation: pv-in 0.4s ease both; }
+.pv-bar-body h2 { font-size: clamp(1.4rem, 2.6vw, 2.1rem); margin: 0.3em 0 0.2em; max-width: none; }
+.pv-bar-text { font-size: 1.3rem; margin: 0.2em 0; } .pv-bar-body .pv-bullets li { font-size: 1.1rem; }
+.pv-notes { position: absolute; z-index: 7; right: 18px; top: 70px; width: 300px; max-height: 60vh; overflow: auto; background: var(--rp-card-solid, var(--bg)); border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px; font-size: 0.9rem; }
+.pv-hold { color: var(--muted); }
+.pv-toast { position: absolute; z-index: 8; top: 70px; left: 50%; transform: translateX(-50%); background: var(--sev-high-bg); color: var(--sev-high-fg); padding: 8px 16px; border-radius: 10px; }
+@keyframes pv-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.pv-pagecard { position: absolute; z-index: 7; left: 22px; bottom: 22px; width: min(340px, calc(100vw - 44px)); max-height: 50vh; overflow: auto; background: var(--rp-card-solid, var(--bg)); border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px 14px; font-size: 0.92rem; line-height: 1.5; outline: none; }
+.pv-pagecard:focus-visible { border-color: var(--rp-accent); }
+.pv-pagecard h2 { font-size: 1.1rem; line-height: 1.25; margin: 0 0 0.2em; max-width: none; overflow-wrap: anywhere; }
+.pv-pagecard h3 { margin: 0.8rem 0 0.3rem; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+.pv-pagepath { margin: 0; color: var(--muted); font-size: 0.82rem; overflow-wrap: anywhere; }
+.pv-pagenav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+@media (max-width: 900px) { .pv-pagecard { left: 10px; right: 10px; width: auto; bottom: 10px; max-height: 44vh; z-index: 9; } }
+@media (prefers-reduced-motion: reduce) { .pv-card, .pv-slide, .pv-bar-body { animation: none; } }
+@media (max-width: 760px) {
+  .pv-card { top: auto; left: 10px; right: 10px; bottom: 10px; width: auto; max-height: 62vh; }
+  .rp-tools button { padding: 0.35rem 0.55rem; }
+}
+
+/* viewer entry (open a report file) */
+.pv-open { min-height: 100vh; display: grid; place-items: center; padding: 24px; background: var(--bg); color: var(--ink); }
+.pv-open .pv-dropbox { max-width: 520px; text-align: center; border: 1px solid var(--line); border-radius: 18px; padding: 44px 28px; }
+/* Loading after a refresh: just a quiet line, shown only if the report takes more than a moment. */
+.pv-open .pv-loading { margin: 0; color: var(--muted); font-size: 0.95em; opacity: 0; animation: pv-fade-in 0.5s ease 1s forwards; }
+@keyframes pv-fade-in { to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .pv-open .pv-loading { animation-duration: 0s; } }
+/* Viewer pages open dark from the first paint, so a refresh does not flash white before the script runs. */
+html[data-start='viewer'] { background: #07090f; }
+.pv-open .pv-err { color: var(--sev-high-fg); }
+
+/* studio: guided-tour picks */
+.ad-tourbox { border: 1px solid var(--rp-accent, #7c5cff); border-radius: 12px; padding: 12px 16px; margin: 0 0 16px; }
+.ad-tourbox ol { margin: 8px 0; padding-left: 1.3rem; } .ad-tourbox li { display: flex; gap: 6px; align-items: center; margin: 4px 0; }
+.ad-tourbox li .ad-grow { flex: 1; }
+
+/* feedback step + explore mode */
+.pv-field { display: flex; flex-direction: column; gap: 4px; margin: 0.7rem 0; font-size: 0.88rem; color: var(--muted); }
+.pv-field input, .pv-field textarea { font: inherit; color: var(--ink); background: var(--chip); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; resize: vertical; }
+.pv-small { font-size: 0.82rem; color: var(--muted); margin: 0.3rem 0; }
+.pv-preview { white-space: pre-wrap; word-break: break-word; background: var(--chip); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font: 0.82rem/1.45 ui-monospace, Consolas, monospace; max-height: 220px; overflow: auto; }
+a.pv-btn { text-decoration: none; display: inline-block; }
+.pv-xp { left: 22px; right: auto; width: min(460px, calc(100vw - 44px)); }
+.pv-tabs { display: flex; gap: 4px; padding: 10px 12px 0; flex-wrap: wrap; }
+.pv-tabs button { background: none; border: 1px solid transparent; border-radius: 8px; padding: 5px 10px; color: var(--muted); cursor: pointer; }
+.pv-tabs button.on { color: var(--ink); border-color: var(--rp-accent); }
+.pv-list li { margin: 4px 0; } .pv-list2 { padding-left: 1.1rem; font-size: 0.92rem; }
+.pv-table { border-collapse: collapse; width: 100%; font-size: 0.88rem; } .pv-table th { text-align: left; color: var(--muted); font-weight: 600; padding: 3px 10px 3px 0; vertical-align: top; width: 36%; } .pv-table td { word-break: break-word; }
+.pv-notes-inline { background: color-mix(in srgb, var(--rp-accent) 14%, transparent); border-radius: 10px; padding: 8px 12px; margin: 8px 0; }
+.pv-xp .pv-btn { padding: 0.3rem 0.6rem; margin-left: 4px; }
+
+/* Split layout: globe on the left, one fixed-size tour panel on the right. Hide gives the globe the full width. */
+.pv-root .rp-globe-layer { transition: right 0.25s ease; }
+.pv-root.split .rp-globe-layer, .pv-root.split .rp-veil { right: 440px; }
+.pv-root.split .rp-top { right: 440px; }
+.pv-root.split .pv-card { top: 0; right: 0; bottom: 0; width: 440px; border-radius: 0; border-width: 0 0 0 1px; box-shadow: none; animation: none; background: var(--rp-card-solid, var(--bg)); backdrop-filter: none; }
+.pv-root.split .pv-card.pv-xp { left: auto; width: 440px; }
+.pv-head-actions { display: inline-flex; gap: 14px; }
+.pv-reopen { position: absolute; z-index: 6; right: 18px; bottom: 18px; }
+@media (max-width: 900px) {
+  .pv-root.split .rp-globe-layer, .pv-root.split .rp-veil, .pv-root.split .rp-top { right: 0; bottom: 62vh; }
+  .pv-root.split .pv-card { top: auto; height: 62vh; width: auto; left: 0; right: 0; border-width: 1px 0 0; }
+}
+
+/* step buttons with a hover title, clickable statements, feedback copy option */
+.pv-dots { gap: 5px; }
+.pv-dots button { position: relative; width: 12px; height: 12px; padding: 0; border: 0; border-radius: 50%; background: var(--line); cursor: pointer; transition: transform 0.15s ease, background 0.15s ease; }
+.pv-dots button.done { background: color-mix(in srgb, var(--rp-accent) 55%, transparent); } .pv-dots button.on { background: var(--rp-accent); transform: scale(1.25); }
+.pv-dots button:hover, .pv-dots button:focus-visible { transform: scale(1.5); background: var(--rp-accent); outline: none; }
+.pv-dots button::after { content: attr(data-title); position: absolute; bottom: calc(100% + 10px); right: -8px; width: max-content; max-width: 240px; padding: 5px 9px; border-radius: 8px; font-size: 0.78rem; line-height: 1.3; white-space: normal;
+  background: var(--ink); color: var(--bg); opacity: 0; pointer-events: none; transform: translateY(3px); transition: opacity 0.12s ease, transform 0.12s ease; z-index: 3; }
+.pv-dots button:hover::after, .pv-dots button:focus-visible::after { opacity: 1; transform: none; }
+.pv-claim { display: block; width: 100%; text-align: left; font: inherit; color: inherit; background: none; border: 1px solid transparent; border-radius: 10px; padding: 4px 8px; margin: -4px -8px; cursor: pointer; }
+.pv-claim:hover { border-color: var(--line); background: var(--chip); }
+.pv-claim[aria-pressed='true'] { border-color: var(--rp-accent); background: color-mix(in srgb, var(--rp-accent) 14%, transparent); }
+.pv-claim small { color: var(--rp-accent); font-weight: 600; }
+.pv-claims li.on .rp-chip { outline: 1px solid var(--rp-accent); }
+.pv-check { display: flex; gap: 8px; align-items: center; margin: 0.8rem 0 0.4rem; cursor: pointer; }
+
+/* v3: calmer headings, compact brief, secondary colour for expandable explanations, clearer clickable findings */
+.pv-root.rp-dark { --rp-secondary: #5fd3c6; } .pv-root.rp-light { --rp-secondary: #0b7a6e; }
+.pv-card-body h3 { margin: 0.9rem 0 0.3rem; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+.pv-card-body h2 { font-size: 1.3rem; }
+.pv-meta { margin: 0.2rem 0 0; }
+.pv-card .rp-chips { gap: 6px; margin-bottom: 2px; }
+.pv-brief { margin: 0.85rem 0 0.5rem; padding: 2px 0 2px 12px; border-left: 2px solid var(--line); }
+.pv-brief p { margin: 0.45rem 0; }
+.pv-brief p b { color: var(--rp-accent); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-right: 6px; }
+.pv-brief .pv-picture { color: var(--muted); margin-top: -0.2rem; }
+.pv-card details { border-left: 2px solid color-mix(in srgb, var(--rp-secondary) 60%, transparent); padding-left: 10px; margin: 0.45rem 0; }
+.pv-card summary { color: var(--rp-secondary); font-weight: 600; font-size: 0.92rem; }
+.pv-card details[open] > summary { margin-bottom: 0.2rem; }
+.pv-claim { border-left: 2px solid color-mix(in srgb, var(--rp-accent) 55%, transparent); border-radius: 4px 10px 10px 4px; padding: 5px 8px 5px 10px; margin: 0 0 0 -10px; width: calc(100% + 10px); background: color-mix(in srgb, var(--rp-accent) 6%, transparent); transition: background 0.15s ease, border-color 0.15s ease; }
+.pv-claim:hover, .pv-claim:focus-visible { background: color-mix(in srgb, var(--rp-accent) 16%, transparent); border-color: var(--rp-accent); outline: none; }
+.pv-claim[aria-pressed='true'] { border-left-width: 4px; }
+.pv-claims li { margin: 0.4rem 0; }
+.pv-answers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.pv-answers .pv-btn { padding: 0.45rem 0.4rem; text-align: center; }
+
+/* icon buttons and the map help */
+.rp-tools .pv-icon, .pv-help .pv-icon { width: 36px; height: 36px; padding: 0; display: inline-grid; place-items: center; border-radius: 10px; background: var(--chip); color: var(--ink); border: 1px solid var(--line); cursor: pointer; font-weight: 700; backdrop-filter: blur(10px); }
+.pv-icon:hover, .pv-icon[aria-expanded='true'] { border-color: var(--rp-accent); }
+.pv-help { position: absolute; z-index: 6; left: 16px; bottom: 16px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.pv-help-card { background: var(--rp-card-glass, color-mix(in srgb, var(--bg) 88%, transparent)); backdrop-filter: blur(14px); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; font-size: 0.85rem; max-width: 300px; }
+.pv-help-card dl { margin: 6px 0 0; } .pv-help-card dl div { display: flex; gap: 8px; margin: 3px 0; } .pv-help-card dt { font-weight: 650; min-width: 128px; } .pv-help-card dd { margin: 0; color: var(--muted); }
+
+/* studio: publish helper and the one-time link */
+.ad-published { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; word-break: break-all; }
+.ad-published code { font-size: 0.9em; }
+.ad-helper { margin: 14px 0; padding: 10px 14px; border: 1px solid var(--line, #3a3f52); border-radius: 12px; }
+.ad-helper input[type='password'] { min-width: 18rem; }
+
+/* studio: captures and links */
+.ad-manage { max-width: 900px; } .ad-manage h3 { margin: 1.4rem 0 0.3rem; }
+.ad-table { border-collapse: collapse; width: 100%; font-size: 0.92rem; margin: 8px 0; } .ad-table th, .ad-table td { text-align: left; padding: 5px 10px 5px 0; border-bottom: 1px solid var(--line, #d5d8e2); }
+.ad-confirm { margin: 12px 0; padding: 12px 16px; border: 2px solid #c0392b; border-radius: 12px; background: color-mix(in srgb, #c0392b 8%, transparent); }
+.ad-confirm ul { margin: 6px 0; padding-left: 1.2rem; } .ad-confirm label { display: block; margin: 8px 0; }
+.ad-landing-manage { max-width: 900px; margin: 18px auto; } .ad-landing-manage summary { cursor: pointer; font-weight: 600; }
+
+.ad-stamp { color: var(--muted, #7a8194); font-weight: 400; margin-left: 8px; } .pv-stamp { display: block; margin-top: 8px; color: var(--muted); font-size: 0.72rem; }
+
+/* Agency brand (only when the build was made with a brand folder; see apps/viewer/brand/README.md). Sizes in em where possible. */
+.rp-branded { font-family: var(--rp-font-body); }
+.rp-branded button, .rp-branded input, .rp-branded textarea { font-family: inherit; }
+.rp-branded .pv-card-body h2, .rp-branded .pv-bar-body h2, .rp-branded .pv-slide h1, .rp-branded .pv-slide h2 {
+  font-family: var(--rp-font-heading); text-transform: var(--rp-heading-case); letter-spacing: 0.02em; font-weight: 600; }
+.rp-branded .pv-link, .rp-branded .pv-card summary { color: var(--rp-link, var(--rp-accent)); }
+.rp-branded .pv-card details summary { color: var(--rp-secondary); }
+.rp-branded .pv-footer { position: absolute; z-index: 2; left: 0; right: 0; bottom: 0.55em; text-align: center; font-size: 0.78em; letter-spacing: 0.03em; color: var(--muted); pointer-events: none; }
+.rp-branded.split .pv-footer { right: 440px; }
+@media (max-width: 900px) { .rp-branded.split .pv-footer { right: 0; bottom: calc(62vh + 0.55em); } }
+
+/* Phone and tablet widths: the tour panel is a sheet at the bottom, so the map help button sits just above it instead of over its Back button. */
+@media (max-width: 900px) { .pv-root.split .pv-help { bottom: calc(62vh + 12px); } }
+/* The refusal line is one calm sentence, sized like the server's own refusal page. */
+.pv-open .pv-dropbox h1 { font-size: 1.25rem; font-weight: 600; line-height: 1.4; margin: 0; }
+
+/* A branded card gets a visible edge, so a dark card still reads against the original dark page. */
+.rp-branded .pv-card, .rp-branded .pv-bar-body, .rp-branded .pv-help-card, .rp-branded .pv-notes { border-color: var(--rp-card-edge, var(--line)); }
+
+/* Text on cards. Inside a card the page text and muted variables take the card values (--rp-card-ink, --rp-card-muted). They equal the page values unless a look
+   gives cardText / cardMuted, so a look without them renders exactly as before; a light card can carry dark text while the page text stays light on the dark stage. */
+.rp-root .pv-card, .rp-root .pv-bar-body, .rp-root .pv-notes, .rp-root .pv-pagecard, .rp-root .pv-help-card,
+.rp-root .rp-menu, .rp-root .rp-notes, .rp-root .rp-tile, .rp-root .rp-mapcap, .rp-root .rp-issue, .rp-root .rp-col, .rp-root .rp-more-item, .rp-root .rp-cat { --ink: var(--rp-card-ink); --muted: var(--rp-card-muted); color: var(--rp-card-ink);
+  --sev-high-bg: var(--rp-card-sev-high-bg); --sev-high-fg: var(--rp-card-sev-high-fg); --sev-medium-bg: var(--rp-card-sev-medium-bg); --sev-medium-fg: var(--rp-card-sev-medium-fg); --sev-low-bg: var(--rp-card-sev-low-bg); --sev-low-fg: var(--rp-card-sev-low-fg);
+  --warn-bg: var(--rp-card-warn-bg); --warn-fg: var(--rp-card-warn-fg); --line: var(--rp-card-line); --chip: var(--rp-card-chip); --label-fg: var(--rp-card-label-fg, var(--muted)); }

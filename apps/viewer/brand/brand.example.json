@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "name": "Example Agency",
+  "voice_context": "agency",
+  "audience": "the agency's clients",
+  "colors": {
+    "primary": "#4aa3df",
+    "blue_dark": "#1f6f9f",
+    "blue_light": "#7fd0f2",
+    "tint": "#eef6fb",
+    "accent_orange": "#f0a050",
+    "text": "#2b2b2b",
+    "text_on_dark": "#c8c8c8",
+    "grey_0": "#111111",
+    "grey_1": "#1d2027",
+    "grey_2": "#262930",
+    "surface": "#15171c",
+    "muted": "#6d6d6d",
+    "grid": "#d6dade"
+  },
+  "fonts": {
+    "heading": { "name": "Oswald", "file": "Oswald.ttf", "case": "uppercase" },
+    "body": { "name": "Inter", "regular": "Inter-Regular.ttf", "bold": "Inter-SemiBold.ttf" }
+  },
+  "attribution": {
+    "header_text": "Example Agency",
+    "footer_text": "Prepared by Example Agency"
+  },
+  "voice": ["Positive and plain: say what helps, with the real number and the way to improve it."],
+  "avoid_words": ["problem", "problems", "failed", "wrong", "missing"],
+  "negation_max_per_100_words": 1.6
+}

@@ -1,0 +1,64 @@
+{
+  "name": "web-obs-client-report",
+  "private": true,
+  "author": {
+    "name": "Garrett Collins",
+    "url": "https://cscloud.digital"
+  },
+  "homepage": "https://cscloud.digital",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gcollins808/web-obs-client-report.git"
+  },
+  "version": "0.1.7",
+  "type": "module",
+  "description": "Client report contract, viewer and Studio app, and report server, built on the web-obs 3D site globe",
+  "scripts": {
+    "fixtures": "node fixtures/make-synthetic.mjs",
+    "typecheck": "tsc -p apps/viewer/tsconfig.report.json",
+    "test": "node packages/contract/tests/draft.test.mjs && node packages/contract/tests/package.test.mjs && node packages/contract/tests/viewer-safety.test.mjs && node apps/server/test.mjs && node apps/server/test-hardening.mjs && node apps/server/test-tunnel-path.mjs && node apps/server/test-make-stack-env.mjs && node apps/viewer/brand/test-brand.mjs && node apps/viewer/brand/test-styles.mjs && node apps/server/test-styles-serve.mjs && node apps/server/test-readability.mjs && node apps/server/test-cardtext.mjs && node apps/viewer/test-refresh-splash.mjs && node apps/viewer/test-pagecard.mjs && node apps/server/test-doctor.mjs && node apps/server/test-hardening-2.mjs && node apps/server/test-revoke-https.mjs && node scripts/test-check-no-client-data.mjs && node apps/server/ingest/test.mjs && node apps/server/ingest/test-hardening.mjs && node apps/server/ingest/test-no-edge.mjs && node apps/server/ingest/test-styles.mjs && node apps/server/tools/check-env.mjs && node scripts/check-vendor-drift.mjs && node scripts/check-guide.mjs && node scripts/test-sync-upstream.mjs && npm run test:publish",
+    "build": "npm run typecheck && vite build --config apps/viewer/vite.report.config.ts && node apps/viewer/inline-report.mjs",
+    "check-env": "node apps/server/tools/check-env.mjs",
+    "report:dev": "vite --config apps/viewer/vite.report.config.ts",
+    "report:build": "npm run build",
+    "report:serve": "node apps/server/scripts/serve-report.mjs",
+    "report:test": "node packages/contract/tests/draft.test.mjs",
+    "report:test:package": "node packages/contract/tests/package.test.mjs",
+    "report:export-json": "node apps/server/scripts/export-client-report.mjs",
+    "server:test": "node apps/server/test.mjs",
+    "server:start": "node apps/server/server.mjs",
+    "server:token": "node apps/server/tools/make-token.mjs",
+    "server:check-env": "node apps/server/tools/check-env.mjs",
+    "publish:client": "node apps/server/scripts/publish-client-report.mjs",
+    "remove:capture": "node apps/server/scripts/remove-capture.mjs",
+    "test:publish": "npm run build && node apps/server/scripts/test-publish-and-remove.mjs fixtures/client-report.sample.json",
+    "test:e2e": "node apps/server/e2e.mjs fixtures/client-report.sample.json && node apps/server/e2e-styles.mjs fixtures/client-report.sample.json && node apps/server/e2e-pagecard.mjs fixtures/client-report.sample.json && node apps/server/scripts/e2e-studio.mjs fixtures/site/_site-graph.json",
+    "publish:helper": "node apps/server/scripts/publish-helper.mjs",
+    "reports:cleanup": "node apps/server/tools/cleanup.mjs",
+    "report:test:safety": "node packages/contract/tests/viewer-safety.test.mjs",
+    "ingest:test": "node apps/server/ingest/test.mjs && node apps/server/ingest/test-hardening.mjs && node apps/server/ingest/test-no-edge.mjs",
+    "check:client-data": "node scripts/check-no-client-data.mjs",
+    "docker:smoke": "node apps/server/tools/docker-smoke.mjs",
+    "check:vendor-drift": "node scripts/check-vendor-drift.mjs",
+    "sync:upstream": "node scripts/sync-upstream.mjs",
+    "upstream:moved": "node scripts/upstream-moved.mjs",
+    "test:sync-upstream": "node scripts/test-sync-upstream.mjs"
+  },
+  "dependencies": {
+    "lucide-react": "^0.487.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "three": "^0.175.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "@types/react": "^19.0.12",
+    "@types/react-dom": "^19.0.4",
+    "@types/three": "^0.175.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.8.2",
+    "vite": "^6.2.5"
+  }
+}

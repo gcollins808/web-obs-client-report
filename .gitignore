@@ -1,0 +1,52 @@
+# Dependencies and build output
+node_modules/
+dist/
+dist*/
+*.tsbuildinfo
+.build/
+
+# Secrets and keys
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+id_rsa*
+id_ed25519*
+
+# Report server data, staging, links, hashes, reports and outbox never go in git
+# (/data is the local quick-start folder from the README; anchored so vendor/web-obs/data stays tracked)
+/data/
+report-staging/
+dev-volume/
+.report-index/
+outbox/
+registry/
+reports/
+audit/
+*.log
+.test-email-sent
+
+# Captures and local settings stay on the maker's machine
+sites/
+.web-obs/
+.obsidian/
+_site-graph.json
+!fixtures/site/_site-graph.json
+
+# Local-only folders and real exports never go in git
+examples/
+client-app/
+*.client-report.json
+*.explore-pack.json
+*.walkthrough.json
+*presenter*.html
+report.env
+
+# An agency brand supplied for a build stays out of git (apps/viewer/brand/README.md). Only the neutral example is tracked.
+apps/viewer/brand/brand.json
+apps/viewer/brand/fonts/
+
+# Local list of client-name patterns for scripts/check-no-client-data.mjs (never committed)
+.client-names

@@ -1,0 +1,47 @@
+# Replace OWNER in the image name with the registry account that holds your image (the public image path, or the image you built yourself: docker build -f deploy/Dockerfile).
+# Portainer stack (web editor): the report VIEWER only, data in ONE named Docker volume instead of host folders.
+# Create the volume once before deploying (Portainer: Volumes > Add volume, name  webobs-data ; or:  docker volume create webobs-data ).
+# No mkdir or chown on the host: a new volume takes the image's /data ownership (uid 1000) on its first mount (tested).
+# Names only: set the values in Portainer's "Environment variables" box, never in this file.
+services:
+  report:
+    image: ghcr.io/OWNER/web-obs-client-report:v0.1.7
+    container_name: webobs-report
+    restart: unless-stopped
+    environment:
+      WEBOBS_REPORT_BASE: ${WEBOBS_REPORT_BASE}        # public address, e.g. https://audit.example.com (required)
+      TRUST_PROXY: "1"                                 # only the Cloudflare tunnel can reach this container
+      REPORT_SOURCE: directory
+      RETENTION_DAYS: ${RETENTION_DAYS:-90}
+      MAIL_MODE: ${MAIL_MODE:-outbox}                  # outbox = feedback kept in memory-backed /outbox (lost on restart); resend = emailed
+      OUTBOX_DIR: /outbox
+      WEBOBS_FEEDBACK_TO: ${WEBOBS_FEEDBACK_TO:-}      # optional
+      RESEND_API_KEY: ${RESEND_API_KEY:-}              # SECRET, only with MAIL_MODE=resend
+      RESEND_FROM: ${RESEND_FROM:-}
+    volumes:
+      - webobs-data:/data:ro                           # reports and the link list; read-only for the viewer
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /outbox:uid=1000,gid=1000                      # writable scratch for feedback while MAIL_MODE=outbox; gone on restart
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - tunnel
+    # No "ports:" on purpose. The tunnel's public hostname points at  http://report:8080
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/healthz').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  webobs-data:
+    external: true
+
+networks:
+  tunnel:
+    external: true

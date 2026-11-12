@@ -1,0 +1,49 @@
+# Replace OWNER in the image name with the registry account that holds your image (the public image path, or the image you built yourself: docker build -f deploy/Dockerfile).
+# Portainer stack (web editor): the report VIEWER only. No ingest. No build section, no relative paths.
+# Set the values in Portainer under "Environment variables" (names below); never write them in this file.
+services:
+  report:
+    image: ghcr.io/OWNER/web-obs-client-report:v0.1.7
+    container_name: webobs-report
+    restart: unless-stopped
+    environment:
+      # Public address of this app. Used for the links it prints. REQUIRED.
+      WEBOBS_REPORT_BASE: ${WEBOBS_REPORT_BASE}
+      # 1 because only the Cloudflare tunnel can reach this container (no published ports, internal network).
+      TRUST_PROXY: "1"
+      # Reports are read from the mounted folder below.
+      REPORT_SOURCE: directory
+      # Days a report is served at most. Optional.
+      RETENTION_DAYS: ${RETENTION_DAYS:-90}
+      # outbox = feedback is written to a file; resend = sent by email (then set the three names below).
+      MAIL_MODE: ${MAIL_MODE:-outbox}
+      # Where client feedback goes. Optional.
+      WEBOBS_FEEDBACK_TO: ${WEBOBS_FEEDBACK_TO:-}
+      # SECRET. Add it as a Portainer variable (never in this file). Only needed when MAIL_MODE=resend.
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      # The sender address for the feedback email. Only needed when MAIL_MODE=resend.
+      RESEND_FROM: ${RESEND_FROM:-}
+    volumes:
+      - /srv/webobs/reports:/data/reports:ro    # read-only: the viewer cannot change or delete reports
+      - /srv/webobs/registry:/data/registry:ro  # read-only: the link list
+      - /srv/webobs/outbox:/data/outbox         # writable: only used while MAIL_MODE=outbox
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - tunnel
+    # No "ports:" on purpose. The tunnel's public hostname audit.example.com points at  http://report:8080
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/healthz').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+networks:
+  tunnel:
+    external: true

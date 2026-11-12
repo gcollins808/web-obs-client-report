@@ -1,0 +1,50 @@
+Created by Garrett Collins (https://cscloud.digital, https://github.com/gcollins808).
+
+This project builds on web-obs.
+
+web-obs
+MIT License
+Copyright (c) its authors
+https://github.com/AgriciDaniel/web-obs
+
+The files under vendor/web-obs come from web-obs and keep its MIT license. They are the 3D site globe
+component, the data helpers it needs, the site capture types and its stylesheets. The client report contract, the viewer
+and Studio app, and the report server in this repository are separate work that uses the globe as a library.
+
+The MIT License text of web-obs follows.
+
+MIT License
+
+Copyright (c) 2026 Daniel Agrici
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+Bundled fonts
+apps/server/fonts holds Oswald (Oswald.woff2) and Inter (Inter-Regular.woff2, Inter-SemiBold.woff2), Latin subsets taken from the npm
+packages @fontsource/oswald and @fontsource/inter 5.3.0. They are copied into the container image so a report's look can name them.
+Both are licensed under the SIL Open Font License 1.1:
+  Oswald: Copyright 2016 The Oswald Project Authors (https://github.com/googlefonts/OswaldFont)
+  Inter: Copyright 2016 The Inter Project Authors (https://github.com/rsms/inter)
+The licence texts are apps/server/fonts/OFL-Oswald.txt and apps/server/fonts/OFL-Inter.txt, and apps/server/fonts/SOURCES.txt records the
+source packages and file checksums. Keep each licence file with its font. A build can also embed fonts an agency supplies in its own brand
+folder (apps/viewer/brand/README.md); those fonts are not part of this repository and keep their own licences.
+
+Dependencies
+The runtime dependencies are react and react-dom (MIT), three (MIT) and lucide-react (ISC). Build and test tools are vite, esbuild and
+@vitejs/plugin-react (MIT) and typescript (Apache-2.0). package-lock.json lists every installed package with its licence field.

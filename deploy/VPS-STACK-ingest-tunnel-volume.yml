@@ -1,0 +1,50 @@
+# Replace OWNER in the image name with the registry account that holds your image (the public image path, or the image you built yourself: docker build -f deploy/Dockerfile).
+# Portainer stack (web editor): the INGEST, writing into the SAME named volume the viewer reads (webobs-data).
+# Do NOT deploy until you are ready to switch the ingest on (a synthetic push test first) and have read docs/INGEST-SECURITY.md. The ingest is the only container
+# with a writable data mount. Names only: values go in Portainer's variables box. Add a Cloudflare Access service-token policy on the
+# tunnel route for the path ingest/* before deploying.
+services:
+  ingest:
+    image: ghcr.io/OWNER/web-obs-client-report:v0.1.7
+    container_name: webobs-ingest
+    restart: unless-stopped
+    command: ["node", "ingest/ingest.mjs"]
+    environment:
+      INGEST_ENABLED: "1"
+      INGEST_SECRET: ${INGEST_SECRET}                  # SECRET, 32+ characters (48+ without Cloudflare Access), Portainer variable only
+      INGEST_REQUIRE_ACCESS_HEADER: ${INGEST_REQUIRE_ACCESS_HEADER:-1}   # 1 = verify the Cloudflare Access token (keep it); 0 = no Cloudflare, NOT recommended
+      INGEST_ACKNOWLEDGE_NO_EDGE_AUTH: ${INGEST_ACKNOWLEDGE_NO_EDGE_AUTH:-}  # 'yes' ONLY when you deliberately run without Cloudflare Access
+      CF_ACCESS_TEAM_DOMAIN: ${CF_ACCESS_TEAM_DOMAIN}  # e.g. yourteam.cloudflareaccess.com
+      CF_ACCESS_AUD: ${CF_ACCESS_AUD}                  # the Access application's AUD tag
+      WEBOBS_REPORT_BASE: ${WEBOBS_REPORT_BASE}        # the links it hands back, e.g. https://audit.example.com
+      TRUST_PROXY: "1"
+      CLIENT_IP_HEADER: ${CLIENT_IP_HEADER:-CF-Connecting-IP}   # rate-limit caller header; without Cloudflare: your proxy's (e.g. X-Real-IP)
+      INGEST_REPORTS_DIR: /data/reports
+      INGEST_REGISTRY_DIR: /data/registry
+      INGEST_AUDIT_LOG: /data/audit/ingest.log         # ids and times only; lives in the same volume
+    volumes:
+      - webobs-data:/data                              # read-write, this service only
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - tunnel
+    # No "ports:" on purpose. Tunnel route: path ingest/* -> http://ingest:8081
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8081/healthz').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  webobs-data:
+    external: true
+
+networks:
+  tunnel:
+    external: true
