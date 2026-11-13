@@ -352,9 +352,12 @@ console.log('the image does not trust the proxy by itself');
   const dc = fs.readFileSync(path.join(import.meta.dirname, '..', '..', 'deploy', 'docker-compose.example.yml'), 'utf8').split(String.fromCharCode(10)).filter((l) => !l.trim().startsWith('#'));
   check('the compose file sets TRUST_PROXY on purpose and publishes no ports', dc.some((l) => /TRUST_PROXY: "1"/.test(l)) && !dc.some((l) => /^\s*ports:/.test(l)));
   const deployDir = path.join(import.meta.dirname, '..', '..', 'deploy');
-  const ymls = fs.readdirSync(deployDir).filter((n) => /[.]ya?ml$/.test(n));
+  const LOCAL_YML = 'docker-compose.local.yml'; // the this-computer test file: the only one that publishes a port, and only on 127.0.0.1
+  const ymls = fs.readdirSync(deployDir).filter((n) => /[.]ya?ml$/.test(n) && n !== LOCAL_YML);
   const lines = (n) => fs.readFileSync(path.join(deployDir, n), 'utf8').split(String.fromCharCode(10)).filter((l) => !l.trim().startsWith('#'));
   const badYml = ymls.filter((n) => { const t = lines(n); return t.some((l) => /^\s*ports:/.test(l)) || !t.some((l) => /TRUST_PROXY: "1"/.test(l)) || !t.some((l) => /read_only: true/.test(l)) || !t.some((l) => /no-new-privileges:true/.test(l)); });
+  { const t = lines(LOCAL_YML); const ports = t.filter((l) => /^\s*-\s*"?([\d.]+:)?\d+:\d+"?\s*$/.test(l));
+    check('the local test compose file publishes only on 127.0.0.1 and keeps read_only and no-new-privileges', ports.length === 1 && /127[.]0[.]0[.]1:8080:8080/.test(ports[0]) && t.some((l) => /read_only: true/.test(l)) && t.some((l) => /no-new-privileges:true/.test(l))); }
   check('every deploy/*.yml publishes no ports and keeps TRUST_PROXY, read_only and no-new-privileges', ymls.length >= 8 && badYml.length === 0, badYml.join(', '));
   const both = lines('VPS-STACK-tunnel-both.yml').join(String.fromCharCode(10)), drop = lines('docker-compose.yml').join(String.fromCharCode(10));
   check('the both-containers stack: viewer volume read-only, ingest off by default and restarted with unless-stopped, no profiles', /- webobs-data:\/data:ro/.test(both) && /INGEST_ENABLED: \$\{INGEST_ENABLED:-0\}/.test(both) && !/on-failure/.test(both) && (both.match(/restart: unless-stopped/g) || []).length === 3 && !/profiles:/.test(both));

@@ -79,7 +79,67 @@ Obsidian + web-obs plugin            this repository (one image, two services)  
 * A report is one JSON file following the contract in `docs/CLIENT-REPORT-CONTRACT.md`. Nothing private is in it: the builder uses an
   allowlist of fields and only an approved report can be exported.
 
-## Quick start with Docker (this computer only)
+## Try it locally
+
+See a client report on your own computer in a few minutes, using the invented sample site in `fixtures/` and no real data. You need Docker (Docker Desktop on Windows or Mac) and a copy of this repository. You don't need Node.
+
+```
+git clone https://github.com/gcollins808/web-obs-client-report.git
+cd web-obs-client-report
+docker compose -f deploy/docker-compose.local.yml up
+```
+
+The first service, `seed`, copies the sample report into `data/` (git-ignored) and prints a link like `http://127.0.0.1:8080/r/...`. Open that link to take the guided tour as a client would. Ignore the "Next: copy /data to the server volume" line it prints; that is for a real server. Opening `http://127.0.0.1:8080/` with no link shows "This link is not available", which is correct: there is no home page and no listing.
+
+Each `up` makes one new 72-hour link. Feedback a visitor sends at the end of the tour stays inside the container and is gone when it stops; nothing is emailed. Stop with Ctrl+C, then `docker compose -f deploy/docker-compose.local.yml down`. Delete `data/` to start over.
+
+The file, `deploy/docker-compose.local.yml`:
+
+```yaml
+name: webobs-local
+
+services:
+  seed:
+    image: node:24-alpine
+    working_dir: /src
+    command: ["node", "apps/server/tools/make-token.mjs", "create",
+              "--report", "fixtures/client-report.sample.json",
+              "--client", "demo", "--out", "/data",
+              "--base", "http://127.0.0.1:8080"]
+    environment:
+      WEBOBS_REPORT_INDEX: /data/.report-index/index.json
+    volumes:
+      - ../apps/server:/src/apps/server:ro
+      - ../fixtures:/src/fixtures:ro
+      - ../data:/data
+
+  report:
+    image: ghcr.io/gcollins808/web-obs-client-report:v0.1.7
+    depends_on:
+      seed:
+        condition: service_completed_successfully
+    ports:
+      - "127.0.0.1:8080:8080"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    environment:
+      WEBOBS_REPORT_BASE: http://127.0.0.1:8080
+      REQUIRE_HTTPS: "0"
+      REPORT_SOURCE: directory
+      MAIL_MODE: outbox
+      OUTBOX_DIR: /outbox
+      WEBOBS_FEEDBACK_TO: team@example.com
+    volumes:
+      - ../data:/data:ro
+    tmpfs:
+      - /tmp
+      - /outbox:uid=1000,gid=1000
+```
+
+It is for testing only. `REQUIRE_HTTPS: "0"` and the port on `127.0.0.1` are not for a live server; for that, see `docs/SETUP.md`.
+
+## Build and run the image yourself (this computer only)
 
 The Portainer stack below (`deploy/VPS-STACK-tunnel-both.yml`, guide in `docs/SETUP.md`) is the recommended deployment, and
 `deploy/docker-compose.yml` is the plain compose version. To try it

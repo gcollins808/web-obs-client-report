@@ -1,0 +1,39 @@
+name: webobs-local
+
+services:
+  seed:
+    image: node:24-alpine
+    working_dir: /src
+    command: ["node", "apps/server/tools/make-token.mjs", "create",
+              "--report", "fixtures/client-report.sample.json",
+              "--client", "demo", "--out", "/data",
+              "--base", "http://127.0.0.1:8080"]
+    environment:
+      WEBOBS_REPORT_INDEX: /data/.report-index/index.json
+    volumes:
+      - ../apps/server:/src/apps/server:ro
+      - ../fixtures:/src/fixtures:ro
+      - ../data:/data
+
+  report:
+    image: ghcr.io/gcollins808/web-obs-client-report:v0.1.7
+    depends_on:
+      seed:
+        condition: service_completed_successfully
+    ports:
+      - "127.0.0.1:8080:8080"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    environment:
+      WEBOBS_REPORT_BASE: http://127.0.0.1:8080
+      REQUIRE_HTTPS: "0"
+      REPORT_SOURCE: directory
+      MAIL_MODE: outbox
+      OUTBOX_DIR: /outbox
+      WEBOBS_FEEDBACK_TO: team@example.com
+    volumes:
+      - ../data:/data:ro
+    tmpfs:
+      - /tmp
+      - /outbox:uid=1000,gid=1000
